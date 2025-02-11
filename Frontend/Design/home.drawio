@@ -1,0 +1,127 @@
+<mxfile host="65bd71144e">
+    <diagram id="sh1_ymXDXdQLtxb71uG6" name="Page-1">
+        <mxGraphModel dx="1959" dy="3015" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="" style="whiteSpace=wrap;html=1;aspect=fixed;" parent="1" vertex="1">
+                    <mxGeometry x="-380" y="-1780" width="3610" height="3610" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;gradientColor=#ffd966;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="-1540" width="560" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="LOGO" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;gradientColor=#97d077;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="640" y="-1525" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;gradientColor=#ea6b66;strokeColor=#b85450;" parent="1" vertex="1">
+                    <mxGeometry x="870" y="-1525" width="300" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="HOME" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="885" y="-1506.25" width="55" height="22.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="DISCOVER" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="950" y="-1506.25" width="70" height="22.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="HOST" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1040" y="-1506.25" width="55" height="22.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="LOGIN" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;" parent="1" vertex="1">
+                    <mxGeometry x="1110" y="-1506.25" width="55" height="22.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="-1450" width="560" height="260" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="&lt;font size=&quot;1&quot; style=&quot;&quot;&gt;&lt;b style=&quot;font-size: 16px;&quot;&gt;Find Hackathons, Innovate, and Compete Worldwide.&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="687.5" y="-1370" width="422.5" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="Search Bar" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+                    <mxGeometry x="700" y="-1285" width="400" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;" vertex="1" parent="1">
+                    <mxGeometry x="620" y="-1190" width="560" height="410" as="geometry"/>
+                </mxCell>
+                <mxCell id="26" style="edgeStyle=none;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=16;" edge="1" parent="1" source="25" target="3">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="25" value="NAVBAR" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+                    <mxGeometry x="1410" y="-1525" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="28" style="edgeStyle=none;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;fontSize=16;" edge="1" parent="1" source="27" target="11">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="27" value="HERO" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+                    <mxGeometry x="1420" y="-1350" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="30" style="edgeStyle=none;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1.007;entryY=0.357;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=16;" edge="1" parent="1" source="29" target="18">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="29" value="FEATURES" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+                    <mxGeometry x="1430" y="-1080" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="34" value="&lt;li data-end=&quot;1080&quot; data-start=&quot;1064&quot;&gt;&lt;br&gt;&lt;/li&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" vertex="1" parent="1">
+                    <mxGeometry x="620" y="-1190" width="560" height="410" as="geometry"/>
+                </mxCell>
+                <mxCell id="35" value="CAROUSEL" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+                    <mxGeometry x="838.75" y="-1190" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="36" value="&lt;li data-end=&quot;1080&quot; data-start=&quot;1064&quot;&gt;&lt;strong data-end=&quot;1080&quot; data-start=&quot;1066&quot;&gt;Event Name&lt;/strong&gt;&lt;/li&gt;&lt;li data-end=&quot;1130&quot; data-start=&quot;1086&quot;&gt;&lt;strong data-end=&quot;1100&quot; data-start=&quot;1088&quot;&gt;Location&lt;/strong&gt; (with a flag or map pin icon)&lt;/li&gt;&lt;li data-end=&quot;1146&quot; data-start=&quot;1136&quot;&gt;&lt;strong data-end=&quot;1146&quot; data-start=&quot;1138&quot;&gt;Date&lt;/strong&gt;&lt;/li&gt;&lt;li data-end=&quot;1181&quot; data-start=&quot;1152&quot;&gt;&lt;strong data-end=&quot;1163&quot; data-start=&quot;1154&quot;&gt;Theme&lt;/strong&gt; or &lt;strong data-end=&quot;1181&quot; data-start=&quot;1167&quot;&gt;Focus Area&lt;/strong&gt;&lt;/li&gt;&lt;li data-end=&quot;1219&quot; data-start=&quot;1187&quot;&gt;&lt;strong data-end=&quot;1204&quot; data-start=&quot;1189&quot;&gt;Prize Money&lt;/strong&gt; (if available)&lt;/li&gt;&lt;li data-end=&quot;1327&quot; data-start=&quot;1225&quot;&gt;A button that says &quot;Learn More&quot; or &quot;Register Now&quot; leading to the event’s official registration page.&lt;/li&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+                    <mxGeometry x="750" y="-1060" width="310" height="210" as="geometry"/>
+                </mxCell>
+                <mxCell id="39" value="" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+                    <mxGeometry x="970" y="-720" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="40" value="" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;fillColor=#d0cee2;strokeColor=#56517e;" vertex="1" parent="1">
+                    <mxGeometry x="620" y="-780" width="560" height="380" as="geometry"/>
+                </mxCell>
+                <mxCell id="43" style="edgeStyle=none;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;fontSize=16;" edge="1" parent="1" source="41" target="40">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="41" value="Upcoming Hackathons:" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+                    <mxGeometry x="1420" y="-670" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="44" value="Category LIKE&amp;nbsp; IOT,HARDWARE,SOFTWARE,UPCOMING" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+                    <mxGeometry x="620" y="-1440" width="560" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="46" value="&lt;li data-end=&quot;1603&quot; data-start=&quot;1364&quot;&gt;Display a list/grid of upcoming hackathons with the following filters:&lt;ul data-end=&quot;1603&quot; data-start=&quot;1442&quot;&gt;&lt;li data-end=&quot;1486&quot; data-start=&quot;1442&quot;&gt;&lt;strong data-end=&quot;1452&quot; data-start=&quot;1444&quot;&gt;Date&lt;/strong&gt; (Upcoming, This Week, Next Month)&lt;/li&gt;&lt;li data-end=&quot;1541&quot; data-start=&quot;1492&quot;&gt;&lt;strong data-end=&quot;1508&quot; data-start=&quot;1494&quot;&gt;Categories&lt;/strong&gt; (AI, Web Development, IoT, etc.)&lt;/li&gt;&lt;li data-end=&quot;1603&quot; data-start=&quot;1547&quot;&gt;&lt;strong data-end=&quot;1561&quot; data-start=&quot;1549&quot;&gt;Location&lt;/strong&gt; (Worldwide or specific countries/regions)&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;li data-end=&quot;1811&quot; data-start=&quot;1607&quot;&gt;For each hackathon, show the following details:&lt;ul data-end=&quot;1811&quot; data-start=&quot;1662&quot;&gt;&lt;li data-end=&quot;1679&quot; data-start=&quot;1662&quot;&gt;&lt;strong data-end=&quot;1679&quot; data-start=&quot;1664&quot;&gt;Event Title&lt;/strong&gt;&lt;/li&gt;&lt;li data-end=&quot;1701&quot; data-start=&quot;1685&quot;&gt;&lt;strong data-end=&quot;1701&quot; data-start=&quot;1687&quot;&gt;Event Date&lt;/strong&gt;&lt;/li&gt;&lt;li data-end=&quot;1745&quot; data-start=&quot;1707&quot;&gt;&lt;strong data-end=&quot;1721&quot; data-start=&quot;1709&quot;&gt;Location&lt;/strong&gt; (with flag or map icon)&lt;/li&gt;&lt;li data-end=&quot;1774&quot; data-start=&quot;1751&quot;&gt;&lt;strong data-end=&quot;1774&quot; data-start=&quot;1753&quot;&gt;Registration Link&lt;/strong&gt;&lt;/li&gt;&lt;li data-end=&quot;1811&quot; data-start=&quot;1780&quot;&gt;A small description or teaser&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+                    <mxGeometry x="660" y="-775" width="460" height="370" as="geometry"/>
+                </mxCell>
+                <mxCell id="47" value="" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;fillColor=#b0e3e6;strokeColor=#0e8088;" vertex="1" parent="1">
+                    <mxGeometry x="620" y="-400" width="560" height="410" as="geometry"/>
+                </mxCell>
+                <mxCell id="50" style="edgeStyle=none;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;fontSize=16;" edge="1" parent="1" source="49" target="47">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="49" value="&lt;span style=&quot;font-size: 12px;&quot;&gt;Add Your Hackathon (Submission Section):&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+                    <mxGeometry x="1410" y="-280" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="51" value="&lt;li data-end=&quot;1944&quot; data-start=&quot;1868&quot;&gt;A section inviting organizers to submit their hackathons to your platform.&lt;/li&gt;&lt;li data-end=&quot;2215&quot; data-start=&quot;1948&quot;&gt;Include:&lt;ul data-end=&quot;2215&quot; data-start=&quot;1964&quot;&gt;&lt;li data-end=&quot;2069&quot; data-start=&quot;1964&quot;&gt;&lt;strong data-end=&quot;1986&quot; data-start=&quot;1966&quot;&gt;Submission Form:&lt;/strong&gt; Basic fields (name, description, date, location, theme, prize, registration link).&lt;/li&gt;&lt;li data-end=&quot;2142&quot; data-start=&quot;2075&quot;&gt;&lt;strong data-end=&quot;2091&quot; data-start=&quot;2077&quot;&gt;Guidelines&lt;/strong&gt; on how to submit and what information is required.&lt;/li&gt;&lt;li data-end=&quot;2215&quot; data-start=&quot;2148&quot;&gt;A reminder that submissions will be reviewed before being listed.&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+                    <mxGeometry x="672.5" y="-380" width="465" height="360" as="geometry"/>
+                </mxCell>
+                <mxCell id="52" value="" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;fillColor=#fad7ac;strokeColor=#b46504;" vertex="1" parent="1">
+                    <mxGeometry x="620" y="10" width="560" height="330" as="geometry"/>
+                </mxCell>
+                <mxCell id="54" style="edgeStyle=none;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;fontSize=16;" edge="1" parent="1" source="53" target="52">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="53" value="How It Works:" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+                    <mxGeometry x="1390" y="90" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="55" value="A short explanation of how your website works:&lt;ol data-end=&quot;2727&quot; data-start=&quot;2488&quot;&gt;&lt;li data-end=&quot;2561&quot; data-start=&quot;2488&quot;&gt;&lt;strong data-end=&quot;2512&quot; data-start=&quot;2491&quot;&gt;Search &amp;amp; Explore:&lt;/strong&gt; Find hackathons by category, date, and location.&lt;/li&gt;&lt;li data-end=&quot;2650&quot; data-start=&quot;2567&quot;&gt;&lt;strong data-end=&quot;2593&quot; data-start=&quot;2570&quot;&gt;Submit a Hackathon:&lt;/strong&gt; Event organizers can submit their hackathons for review.&lt;/li&gt;&lt;li data-end=&quot;2727&quot; data-start=&quot;2656&quot;&gt;&lt;strong data-end=&quot;2678&quot; data-start=&quot;2659&quot;&gt;Join &amp;amp; Compete:&lt;/strong&gt; Participants can register and compete in events.&lt;/li&gt;&lt;/ol&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+                    <mxGeometry x="721.25" y="30" width="367.5" height="250" as="geometry"/>
+                </mxCell>
+                <mxCell id="56" value="" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;fillColor=#dae8fc;gradientColor=#7ea6e0;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="620" y="340" width="560" height="210" as="geometry"/>
+                </mxCell>
+                <mxCell id="57" value="&lt;h3 data-end=&quot;2943&quot; data-start=&quot;2925&quot;&gt;&lt;strong data-end=&quot;2943&quot; data-start=&quot;2932&quot;&gt;Footer:&lt;/strong&gt;&lt;/h3&gt;&lt;ul data-end=&quot;3159&quot; data-start=&quot;2947&quot;&gt;&lt;li data-end=&quot;3072&quot; data-start=&quot;2947&quot;&gt;Include your contact information, social media links, and a newsletter signup to keep users updated on upcoming hackathons.&lt;/li&gt;&lt;li data-end=&quot;3159&quot; data-start=&quot;3076&quot;&gt;You could also add a small section for the most frequently asked questions (FAQ).&lt;/li&gt;&lt;/ul&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+                    <mxGeometry x="717.5" y="380" width="365" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="59" style="edgeStyle=none;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;fontSize=16;" edge="1" parent="1" source="58" target="56">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="58" value="FOOTER" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+                    <mxGeometry x="1390" y="390" width="120" height="60" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
