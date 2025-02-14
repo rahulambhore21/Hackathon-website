@@ -6,7 +6,7 @@ import './Navbar.css';
 
 const Navbar = () => {
   const [toggleMenu, setToggleMenu] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('John Doe'); // Example user name
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
