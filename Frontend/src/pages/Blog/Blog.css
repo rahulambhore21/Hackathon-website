@@ -1,0 +1,105 @@
+.blog-container {
+  font-family: Arial, sans-serif;
+  margin: 10rem auto;
+  max-width: 800px;
+  padding: 20px;
+}
+
+.blog-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.blog-header h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+}
+
+.blog-header p {
+  font-size: 1.2em;
+  color: #666;
+}
+
+.blog-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.blog-posts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.blog-post {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 20px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: calc(50% - 20px);
+}
+
+.card h2 {
+  font-size: 1.8em;
+  margin-bottom: 10px;
+}
+
+.card p {
+  font-size: 1em;
+  color: #333;
+}
+
+.card a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.card a:hover {
+  text-decoration: underline;
+}
+
+.blog-sidebar {
+  margin-top: 40px;
+}
+
+.blog-sidebar h3 {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+}
+
+.blog-sidebar p {
+  font-size: 1em;
+  color: #333;
+}
+
+.blog-sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.blog-sidebar ul li {
+  margin-bottom: 10px;
+}
+
+.blog-sidebar ul li a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.blog-sidebar ul li a:hover {
+  text-decoration: underline;
+}
+
+.blog-footer {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 0.9em;
+  color: #666;
+}

@@ -1,11 +1,16 @@
 import React from 'react'
-import Navbar from '../../components/Navbar/Navbar'
 import Hero from '../../components/Hero/Hero'
+import './Home.css'
+import Features from '../../components/Features/Features'
 function Home() {
   return (
     <>
-    <Navbar/>
+    <div className="hero">
     <Hero/>
+    </div>
+    <div className="features">
+    <Features/>
+    </div>
     </>
   )
 }

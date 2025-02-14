@@ -1,0 +1,50 @@
+
+.profile-container {
+  display: flex;
+  margin: 2rem auto;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  width: 300px;
+  text-align: center;
+}
+
+.img img {
+  width: 100%;
+  height: auto;
+}
+
+.details {
+  padding: 20px;
+}
+
+.details h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.details p {
+  margin: 5px 0;
+  color: #555;
+}
+
+.edit-btn {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.edit-btn:hover {
+  background-color: #0056b3;
+}

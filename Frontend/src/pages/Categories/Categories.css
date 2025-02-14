@@ -1,0 +1,18 @@
+
+.categories-container {
+    margin: 10rem auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.categories-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.category-item {
+  padding: 10px;
+  margin: 5px 0;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+}
