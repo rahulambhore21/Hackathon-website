@@ -1,23 +1,22 @@
-const fs = require('fs').promises;
-const path = require('path');
-const express = require("express");
-const settings = require("./src/config/settings.js");
-const cors = require("cors");
-
-// const MainRoutes = require("./src/routes/MainRoutes.js")
-// const MainMiddleware = require('./src/middleware/MainMiddleware.js');
-// const errorHandleMiddleware = require("./src/middleware/errorMiddleware.js");
-// const MainController = require("./src/controller/MainController.js");
-
-if (settings.configs.debug) {
-    console.clear();
-}
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const authRoutes = require('./routes/auth');
+const eventRoutes = require('./routes/event');
+require('dotenv').config();
 
 const app = express();
+const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI;
+
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-app.get("/", (req, res) => { res.end("working..") })
+app.use('/api/auth', authRoutes);
+app.use('/api/events', eventRoutes);
 
-app.listen(settings.configs.PORT, settings.configs.allowed_host[0], () => console.log(`Server listening on port:${settings.configs.PORT} \nLink: http://${settings.configs.allowed_host[0]}:${settings.configs.PORT}`));
+mongoose.connect(MONGO_URI)
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.log(err));
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

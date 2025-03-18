@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { RiMenu3Line, RiCloseLine } from 'react-icons/ri';
-import { NavLink, useNavigate , Link } from 'react-router';
+import React, { useState, useEffect, useRef } from 'react';
+import { RiMenu3Line, RiCloseLine, RiMoonLine, RiSunLine, RiUser3Line, RiSettings5Line, RiLogoutCircleRLine, RiDashboardLine } from 'react-icons/ri';
+import { NavLink, useNavigate, Link, useLocation } from 'react-router-dom';
 import logo from '../../assets/logo.jpg';
 import './Navbar.css';
 
@@ -9,66 +9,194 @@ const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('John Doe'); // Example user name
   const [showDropdown, setShowDropdown] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [isDarkTheme, setIsDarkTheme] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
+  const dropdownRef = useRef(null);
+  const menuRef = useRef(null);
+
+  // Handle scroll effect with improved threshold
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 30);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Close dropdown when clicking outside with useRef hook
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+      
+      if (menuRef.current && !menuRef.current.contains(event.target) && !event.target.classList.contains('menu-icon')) {
+        setToggleMenu(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setToggleMenu(false);
+  }, [location.pathname]);
+
+  // Handle theme toggle with persistence in localStorage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setIsDarkTheme(savedTheme === 'dark');
+      document.body.classList.toggle('light-theme', savedTheme === 'light');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = !isDarkTheme;
+    setIsDarkTheme(newTheme);
+    document.body.classList.toggle('light-theme', !newTheme);
+    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+  };
+
+  // Handle navigation with smooth page transition
+  const handleNavigate = (path) => {
+    setToggleMenu(false);
+    navigate(path);
+  };
+
+  // Handle user login/logout with animation
+  const handleAuth = () => {
+    if (isLoggedIn) {
+      // Add logout logic here
+      setIsLoggedIn(false);
+      setShowDropdown(false);
+    } else {
+      navigate('/authentication');
+    }
+  };
+
+  // Get initials from name
+  const getInitials = (name) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
-    <div className="bg-black navbar">
+    <div className={`navbar ${scrolled ? 'navbar-scrolled' : ''} ${isDarkTheme ? 'dark-theme' : 'light-theme'}`}>
       <div className="navbar-links">
         <div className="navbar-links_logo" onClick={() => navigate('/')}>
           <img src={logo} alt="logo" />
         </div>
         <div className="navbar-links_container">
-          <NavLink to="/" activeClassName="active-link"><p>Home</p></NavLink>
-          <NavLink to="/categories" activeClassName="active-link"><p>Categories</p></NavLink>
-          <NavLink to="/upcoming" activeClassName="active-link"><p>Upcoming Hackthons</p></NavLink>
-          <NavLink to="/blog" activeClassName="active-link"><p>Blog</p></NavLink>
+          <NavLink to="/" className={({isActive}) => isActive ? "active-link" : ""}>
+            <p>Home</p>
+          </NavLink>
+          <NavLink to="/events" className={({isActive}) => isActive ? "active-link" : ""}>
+            <p>Categories</p>
+          </NavLink>
+          <NavLink to="/upcoming" className={({isActive}) => isActive ? "active-link" : ""}>
+            <p>Upcoming Hackathons</p>
+          </NavLink>
+          <NavLink to="/blogs" className={({isActive}) => isActive ? "active-link" : ""}>
+            <p>Blog</p>
+          </NavLink>
         </div>
       </div>
-      <div className="navbar-sign">
-        {isLoggedIn ? (
-          <div className="navbar-user-dropdown">
-            <span className="navbar-user" onClick={() => setShowDropdown(!showDropdown)}>
-              Welcome, {userName}
-            </span>
-            <div className={` navbar-dropdown ${showDropdown ? 'show' : ''}` } >
-            <Link to={'/profile'}>  <p>Profile</p> </Link>
-              <p onClick={() => setIsLoggedIn(false)}>Logout</p>
+      
+      <div className="navbar-controls">
+        <div className="theme-toggle" onClick={toggleTheme} title={isDarkTheme ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+          {isDarkTheme ? <RiSunLine /> : <RiMoonLine />}
+        </div>
+        
+        <div className="navbar-sign">
+          {isLoggedIn ? (
+            <div className="navbar-user-dropdown" ref={dropdownRef}>
+              <div 
+                className="navbar-user" 
+                onClick={() => setShowDropdown(!showDropdown)}
+                aria-expanded={showDropdown}
+                aria-haspopup="true"
+              >
+                <div className="user-avatar">{getInitials(userName)}</div>
+                <span className="user-name">Welcome, {userName}</span>
+                <span className="dropdown-arrow">{showDropdown ? '▲' : '▼'}</span>
+              </div>
+              {showDropdown && (
+                <div className="navbar-dropdown">
+                  <Link to="/profile" onClick={() => setShowDropdown(false)}>
+                    <p><RiUser3Line style={{marginRight: '10px', verticalAlign: 'middle'}} /> Profile</p>
+                  </Link>
+                  <Link to="/my-hackathons" onClick={() => setShowDropdown(false)}>
+                    <p><RiDashboardLine style={{marginRight: '10px', verticalAlign: 'middle'}} /> My Hackathons</p>
+                  </Link>
+                  <Link to="/settings" onClick={() => setShowDropdown(false)}>
+                    <p><RiSettings5Line style={{marginRight: '10px', verticalAlign: 'middle'}} /> Settings</p>
+                  </Link>
+                  <hr />
+                  <p onClick={handleAuth}><RiLogoutCircleRLine style={{marginRight: '10px', verticalAlign: 'middle'}} /> Logout</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button type="button" onClick={() => navigate('/authentication')}>LOGIN</button>
+          )}
+        </div>
+        
+        <div className="navbar-menu">
+          {toggleMenu
+            ? <RiCloseLine className="menu-icon" onClick={() => setToggleMenu(false)} />
+            : <RiMenu3Line className="menu-icon" onClick={() => setToggleMenu(true)} />}
+          {toggleMenu && (
+          <div className="navbar-menu_container scale-up-center" ref={menuRef}>
+            <div className="navbar-menu_container-links">
+              <p onClick={() => handleNavigate('/')}>Home</p>
+              <p onClick={() => handleNavigate('/upcoming')}>Upcoming Hackathons</p>
+              <p onClick={() => handleNavigate('/discover')}>Discover</p>
+              <p onClick={() => handleNavigate('/categories')}>Categories</p>
+              <p onClick={() => handleNavigate('/blog')}>Blog</p>
+            </div>
+            <div className="navbar-menu_container-links-sign">
+              {isLoggedIn ? (
+                <div className="mobile-user-menu">
+                  <div className="mobile-user-header">
+                    <div className="mobile-user-avatar">{getInitials(userName)}</div>
+                    <p>Welcome, {userName}</p>
+                  </div>
+                  <p onClick={() => handleNavigate('/profile')}>
+                    <RiUser3Line style={{marginRight: '10px'}} /> Profile
+                  </p>
+                  <p onClick={() => handleNavigate('/my-hackathons')}>
+                    <RiDashboardLine style={{marginRight: '10px'}} /> My Hackathons
+                  </p>
+                  <p onClick={() => handleNavigate('/settings')}>
+                    <RiSettings5Line style={{marginRight: '10px'}} /> Settings
+                  </p>
+                  <p onClick={handleAuth}>
+                    <RiLogoutCircleRLine style={{marginRight: '10px'}} /> Logout
+                  </p>
+                </div>
+              ) : (
+                <button type="button" onClick={() => handleNavigate('/authentication')}>LOGIN</button>
+              )}
+              <div className="mobile-theme-toggle" onClick={toggleTheme}>
+                {isDarkTheme ? 
+                  <><RiSunLine /> <span>Light Mode</span></> : 
+                  <><RiMoonLine /> <span>Dark Mode</span></>
+                }
+              </div>
             </div>
           </div>
-        ) : (
-          <button type="button" onClick={() => navigate('/authentication')}>LOGIN</button>
-        )}
-      </div>
-      <div className="navbar-menu">
-        {toggleMenu
-          ? <RiCloseLine color="#fff" size={27} onClick={() => setToggleMenu(false)} />
-          : <RiMenu3Line color="#fff" size={27} onClick={() => setToggleMenu(true)} />}
-        {toggleMenu && (
-        <div className="navbar-menu_container scale-up-center">
-          <div className="navbar-menu_container-links">
-            <NavLink to="/" activeClassName="active-link">Home</NavLink>
-            <NavLink to="/upcoming" activeClassName="active-link">Upcoming Hackthons</NavLink>
-            <NavLink to="/discover" activeClassName="active-link">DISCOVER</NavLink>
-            <NavLink to="/categories" activeClassName="active-link">Categories</NavLink>
-            <NavLink to="/blog" activeClassName="active-link">Blog</NavLink>
-          </div>
-          <div className="navbar-menu_container-links-sign">
-            {isLoggedIn ? (
-              <div className="navbar-user-dropdown">
-                <span className="navbar-user" onClick={() => setShowDropdown(!showDropdown)}>
-                  Welcome, {userName}
-                </span>
-                <div className={`navbar-dropdown ${showDropdown ? 'show' : ''}`}>
-                  <p onClick={() => setIsLoggedIn(false)}>Logout</p>
-                 <Link to={'./profile'}> <p>Profile</p></Link>
-                </div>
-              </div>
-            ) : (
-              <button type="button" onClick={() => navigate('/authentication')}>LOGIN</button>
-            )}
-          </div>
+          )}
         </div>
-        )}
       </div>
     </div>
   );
