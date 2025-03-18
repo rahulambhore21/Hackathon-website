@@ -22,7 +22,7 @@
 .particle {
     position: absolute;
     border-radius: 50%;
-    background-color: rgba(233, 159, 76, 0.6);
+    background-color: rgba(108, 99, 255, 0.6); /* Changed from orange to purple */
     pointer-events: none;
     opacity: 0;
     animation: float 6s infinite ease-in-out;
@@ -40,19 +40,21 @@
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(21, 25, 40, 0.3); /* Changed to a darker blue-tinted background */
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    height: 70vh;
+    max-height: 90vh;
     width: 30vw;
+    max-width: 450px;
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 24px;
     box-shadow: 
-        0 4px 30px rgba(0, 0, 0, 0.1),
-        0 10px 20px rgba(222, 84, 153, 0.2),
+        0 4px 30px rgba(0, 0, 0, 0.2),
+        0 10px 20px rgba(108, 99, 255, 0.2), /* Changed accent color */
         0 0 0 1px rgba(255, 255, 255, 0.1) inset;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    padding: 10px;
+    padding: 20px;
+    overflow-y: auto;
     animation: formAppear 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
@@ -64,8 +66,8 @@
 .form_area:hover {
     transform: translateY(-5px);
     box-shadow: 
-        0 7px 40px rgba(0, 0, 0, 0.15),
-        0 15px 25px rgba(222, 84, 153, 0.2),
+        0 7px 40px rgba(0, 0, 0, 0.2),
+        0 15px 25px rgba(108, 99, 255, 0.3), /* Changed accent color */
         0 0 0 1px rgba(255, 255, 255, 0.15) inset;
 }
   
@@ -88,7 +90,7 @@
     transform: translateX(-50%);
     width: 60px;
     height: 3px;
-    background: linear-gradient(90deg, #DE5499, #E99F4C);
+    background: linear-gradient(90deg, #6C63FF, #5CE1E6); /* Changed gradient */
     border-radius: 3px;
 }
   
@@ -103,8 +105,8 @@
     display: flex;
     flex-direction: column;
     align-items: baseline;
-    margin: 15px 0;
-    width: 25vw;
+    margin: 10px 0;
+    width: 90%;
     animation: slideIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     animation-fill-mode: both;
 }
@@ -125,7 +127,7 @@
     padding: 14px 16px;
     border-radius: 12px;
     font-size: 15px;
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(21, 25, 40, 0.4); /* Darker input background */
     color: #fff;
     transition: all 0.3s ease;
     backdrop-filter: blur(5px);
@@ -139,18 +141,18 @@
   
 .form_style:focus {
     transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.8);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-    background-color: rgba(255, 255, 255, 0.25);
+    border-color: #5CE1E6; /* Teal border on focus */
+    box-shadow: 0 6px 15px rgba(92, 225, 230, 0.15);
+    background-color: rgba(21, 25, 40, 0.5);
 }
   
 .btn {
-    padding: 16px;
-    margin: 15px 0px 10px;
+    padding: 14px;
+    margin: 10px 0px 8px;
     width: 100%;
     font-size: 16px;
     font-weight: 700;
-    background: linear-gradient(135deg, #DE5499, #e05c9e, #E99F4C);
+    background: linear-gradient(135deg, #6C63FF, #5E72EB, #5CE1E6); /* New gradient */
     background-size: 200% 200%;
     border-radius: 14px;
     color: #fff;
@@ -159,8 +161,8 @@
     border: none;
     letter-spacing: 1.2px;
     box-shadow: 
-        0 5px 15px rgba(222, 84, 153, 0.4),
-        0 10px 30px rgba(222, 84, 153, 0.2),
+        0 5px 15px rgba(108, 99, 255, 0.4),
+        0 10px 30px rgba(92, 225, 230, 0.3),
         0 -2px 0 rgba(255, 255, 255, 0.2) inset;
     animation: gradientMove 3s ease infinite;
     position: relative;
@@ -200,8 +202,8 @@
 .btn:hover {
     transform: translateY(-3px);
     box-shadow: 
-        0 8px 25px rgba(222, 84, 153, 0.5),
-        0 15px 40px rgba(222, 84, 153, 0.3),
+        0 8px 25px rgba(108, 99, 255, 0.5),
+        0 15px 40px rgba(92, 225, 230, 0.4),
         0 -2px 0 rgba(255, 255, 255, 0.4) inset;
     letter-spacing: 1.8px;
 }
@@ -209,7 +211,7 @@
 .btn:active {
     transform: translateY(1px);
     box-shadow: 
-        0 2px 10px rgba(222, 84, 153, 0.4),
+        0 2px 10px rgba(108, 99, 255, 0.4),
         0 -1px 0 rgba(255, 255, 255, 0.1) inset;
 }
 
@@ -221,7 +223,7 @@
   
 .link {
     font-weight: 700;
-    color: #E99F4C;
+    color: #5CE1E6; /* Teal link color */
     padding: 5px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -236,7 +238,7 @@
     height: 2px;
     bottom: 0;
     left: 0;
-    background: linear-gradient(90deg, #E99F4C, #DE5499);
+    background: linear-gradient(90deg, #5CE1E6, #6C63FF); /* New gradient */
     transition: width 0.3s ease;
     border-radius: 4px;
 }
@@ -280,9 +282,10 @@
 .checkbox-container {
     display: flex;
     align-items: center;
-    margin: 15px 0;
+    margin: 10px 0;
     color: #fff;
     animation: fadeIn 0.5s 0.5s both;
+    font-size: 0.95rem;
 }
 
 .checkbox-container label {
@@ -316,7 +319,7 @@
 }
 
 .checkbox-container input:checked ~ .checkmark {
-    background: linear-gradient(135deg, #DE5499, #E99F4C);
+    background: linear-gradient(135deg, #6C63FF, #5CE1E6); /* New gradient */
     border-color: transparent;
 }
 
@@ -418,12 +421,65 @@
     width: 100%;
 }
 
+@media (max-width: 768px) {
+    .form_area {
+        width: 80vw;
+        max-height: 85vh;
+        padding: 15px;
+    }
+    .form_group {
+        width: 100%;
+        margin: 8px 0;
+    }
+    .title {
+        margin-top: 5px;
+        padding-bottom: 10px;
+    }
+    .btn {
+        padding: 12px;
+    }
+}
+
 @media (max-width: 480px) {
     .form_area {
-        width: 320px;
-        padding: 20px;
+        width: 95vw;
+        max-height: 80vh;
+        padding: 15px 10px;
     }
-    .form_group{
-        width: 100%;
+    .title {
+        font-size: 1.6em;
+        margin-top: 5px;
     }
+    .form_group {
+        margin: 6px 0;
+    }
+    .form_style {
+        padding: 10px 12px;
+    }
+    .message {
+        padding: 8px;
+        font-size: 0.9em;
+    }
+    .checkbox-container {
+        font-size: 0.85rem;
+    }
+}
+
+/* Add scrollbar styling for better appearance */
+.form_area::-webkit-scrollbar {
+    width: 6px;
+}
+
+.form_area::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.form_area::-webkit-scrollbar-thumb {
+    background: rgba(108, 99, 255, 0.5); /* Changed scrollbar thumb color */
+    border-radius: 10px;
+}
+
+.form_area::-webkit-scrollbar-thumb:hover {
+    background: rgba(108, 99, 255, 0.7); /* Changed hover color */
 }

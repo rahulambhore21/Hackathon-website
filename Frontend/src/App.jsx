@@ -7,6 +7,7 @@ import Blogs from "./pages/Blogs/Blogs";
 import Blog from "./pages/Blog/Blog";
 import Authentication from "./pages/Authentication/Authentication";
 import AddEvent from './pages/AddEvent/AddEvent';
+import Profile from './pages/Profile/Profile';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/blogs" element={<Blogs />} />
         <Route path="/blogs/:id" element={<Blog />} />
         <Route path="/add-event" element={<AddEvent />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<div>Page not found</div>} />
       </Routes>
     </Router>

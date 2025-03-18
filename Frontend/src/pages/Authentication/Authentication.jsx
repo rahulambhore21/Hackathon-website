@@ -9,7 +9,9 @@ function Authentication() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: '',
+    phoneNumber: ''
   });
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState('');
@@ -94,6 +96,19 @@ function Authentication() {
       isValid = false;
     }
 
+    if (isSignup && formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = "Passwords do not match";
+      isValid = false;
+    }
+
+    if (isSignup && !formData.phoneNumber) {
+      errors.phoneNumber = "Phone number is required";
+      isValid = false;
+    } else if (isSignup && !/^\d{10}$/.test(formData.phoneNumber)) {
+      errors.phoneNumber = "Please enter a valid 10-digit phone number";
+      isValid = false;
+    }
+
     setErrors(errors);
     return isValid;
   };
@@ -144,7 +159,9 @@ function Authentication() {
         setFormData({
           name: '',
           email: '',
-          password: ''
+          password: '',
+          confirmPassword: '',
+          phoneNumber: ''
         });
         // Auto switch to login after successful signup
         setTimeout(() => {
@@ -206,9 +223,9 @@ function Authentication() {
   }, [isSignup]);
 
   return (
-    <div className='h-screen w-screen justify-center items-center flex' 
+    <div className='h-screen w-screen justify-center items-center flex overflow-hidden' 
       style={{ 
-        backgroundImage: `linear-gradient(rgba(38, 65, 67, 0.8), rgba(222, 84, 153, 0.8)), url(${backgroundimg})`, 
+        backgroundImage: `linear-gradient(rgba(21, 25, 40, 0.9), rgba(92, 225, 230, 0.7)), url(${backgroundimg})`, 
         backgroundSize: 'cover', 
         backgroundPosition: 'center'
       }}>
@@ -221,7 +238,7 @@ function Authentication() {
               {message}
             </div>
           )}
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} style={{width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
             {isSignup && (
               <div className="form_group">
                 <label className="sub_title" htmlFor="name">Name</label>
@@ -249,6 +266,20 @@ function Authentication() {
               />
               {errors.email && <span style={{color: 'rgba(255, 87, 87, 0.9)', fontSize: '0.8rem', marginTop: '5px'}}>{errors.email}</span>}
             </div>
+            {isSignup && (
+              <div className="form_group">
+                <label className="sub_title" htmlFor="phoneNumber">Phone Number</label>
+                <input 
+                  name="phoneNumber" 
+                  placeholder="Enter your phone number" 
+                  className="form_style" 
+                  type="tel" 
+                  value={formData.phoneNumber} 
+                  onChange={handleChange} 
+                />
+                {errors.phoneNumber && <span style={{color: 'rgba(255, 87, 87, 0.9)', fontSize: '0.8rem', marginTop: '5px'}}>{errors.phoneNumber}</span>}
+              </div>
+            )}
             <div className="form_group">
               <label className="sub_title" htmlFor="password">Password</label>
               <div className="password-field-container">
@@ -277,6 +308,24 @@ function Authentication() {
               )}
             </div>
             
+            {isSignup && (
+              <div className="form_group">
+                <label className="sub_title" htmlFor="confirmPassword">Confirm Password</label>
+                <div className="password-field-container">
+                  <input 
+                    name="confirmPassword" 
+                    placeholder="Confirm your password" 
+                    id="confirmPassword" 
+                    className="form_style" 
+                    type={showPassword ? "text" : "password"} 
+                    value={formData.confirmPassword} 
+                    onChange={handleChange} 
+                  />
+                </div>
+                {errors.confirmPassword && <span style={{color: 'rgba(255, 87, 87, 0.9)', fontSize: '0.8rem', marginTop: '5px'}}>{errors.confirmPassword}</span>}
+              </div>
+            )}
+            
             {!isSignup && (
               <div className="checkbox-container">
                 <label>
@@ -291,7 +340,32 @@ function Authentication() {
               </div>
             )}
             
-            <div>
+            {isSignup && (
+              <div className="checkbox-container">
+                <label>
+                  <input
+                    type="checkbox"
+                    name="termsAgreed"
+                    onChange={(e) => {
+                      if (!e.target.checked) {
+                        setErrors({...errors, terms: "You must agree to the terms and conditions"});
+                      } else {
+                        setErrors({...errors, terms: null});
+                      }
+                    }}
+                  />
+                  <span className="checkmark"></span>
+                  I agree to the <a href="#" style={{color: '#5CE1E6'}}>Terms & Conditions</a>
+                </label>
+              </div>
+            )}
+            {errors.terms && (
+              <div style={{width: '100%', textAlign: 'left', marginBottom: '5px'}}>
+                <span style={{color: 'rgba(255, 87, 87, 0.9)', fontSize: '0.8rem'}}>{errors.terms}</span>
+              </div>
+            )}
+            
+            <div style={{width: '90%'}}>
               <button 
                 className="btn" 
                 type="submit" 
@@ -306,7 +380,7 @@ function Authentication() {
                   isSignup ? 'SIGN UP' : 'LOGIN'
                 )}
               </button>
-              <p style={{color: 'rgba(255, 255, 255, 0.8)'}}>
+              <p style={{color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.95rem', margin: '8px 0'}}>
                 {isSignup ? 'Have an Account?' : "Don't have an Account?"}
                 <span className="link" onClick={toggleAuthMode}>
                   {isSignup ? ' Login!' : ' Sign Up!'}
