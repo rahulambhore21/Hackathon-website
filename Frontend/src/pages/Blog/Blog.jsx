@@ -1,37 +1,83 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import './Blog.css'
 
 function Blog() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [blog, setBlog] = useState(null);
   const [relatedPosts, setRelatedPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Scroll to top when component mounts
+    window.scrollTo(0, 0);
+    
+    // Reset state when id changes
+    setBlog(null);
+    setError(null);
+    setLoading(true);
+    
     // Simulate fetching a specific blog post
     setTimeout(() => {
-      const blogId = parseInt(id);
-      const foundBlog = mockBlogs.find(blog => blog.id === blogId);
-      
-      // Find related posts (same category, excluding current post)
-      const related = mockBlogs
-        .filter(post => post.category === foundBlog.category && post.id !== blogId)
-        .slice(0, 3);
-      
-      setBlog(foundBlog);
-      setRelatedPosts(related);
-      setLoading(false);
+      try {
+        const blogId = parseInt(id);
+        const foundBlog = mockBlogs.find(blog => blog.id === blogId);
+        
+        if (!foundBlog) {
+          setError('Blog post not found');
+          setLoading(false);
+          return;
+        }
+        
+        // Find related posts (same category, excluding current post)
+        const related = mockBlogs
+          .filter(post => post.category === foundBlog.category && post.id !== blogId)
+          .slice(0, 3);
+        
+        setBlog(foundBlog);
+        setRelatedPosts(related);
+      } catch (err) {
+        setError('Error loading blog post');
+      } finally {
+        setLoading(false);
+      }
     }, 800);
   }, [id]);
 
   if (loading) {
-    return <div className="blog-loading">Loading blog post...</div>;
+    return (
+      <div className="blog-container">
+        <div className="blog-loading">
+          <div className="loader"></div>
+          <p>Loading amazing content...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (!blog) {
-    return <div className="blog-error">Blog post not found</div>;
+  if (error || !blog) {
+    return (
+      <div className="blog-container">
+        <div className="blog-error">
+          <h2>{error || 'Blog post not found'}</h2>
+          <p>We couldn't find the blog post you were looking for.</p>
+          <button 
+            onClick={() => navigate('/blogs')}
+            className="error-button"
+          >
+            Return to blogs
+          </button>
+        </div>
+      </div>
+    );
   }
+
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
 
   return (
     <div className="blog-container">
@@ -43,7 +89,7 @@ function Blog() {
             <img src={blog.authorImg} alt={blog.author} />
             <span>{blog.author}</span>
           </div>
-          <span className="blog-date">{blog.date}</span>
+          <span className="blog-date">{formatDate(blog.date)}</span>
         </div>
       </div>
 
@@ -52,7 +98,7 @@ function Blog() {
       </div>
 
       <div className="blog-content">
-        <p>{blog.excerpt}</p>
+        <p className="blog-excerpt"><strong>{blog.excerpt}</strong></p>
         
         {/* This would be the full blog content */}
         <p>
@@ -79,6 +125,7 @@ function Blog() {
           <li>Real-time data processing with limited resources</li>
           <li>Creating an intuitive UI within the time constraints</li>
           <li>Integrating multiple APIs with different response formats</li>
+          <li>Ensuring scalability for potential future growth</li>
         </ul>
         
         <h2>Our Solution</h2>
@@ -93,6 +140,13 @@ function Blog() {
           The solution we built combined innovative approaches to data visualization
           with accessible design principles to create a product that could be useful
           for everyone regardless of technical ability.
+        </p>
+        
+        <h2>Key Takeaways</h2>
+        <p>
+          The hackathon taught us valuable lessons about teamwork, rapid prototyping, and
+          the importance of user-focused design. We learned to prioritize features based on
+          user needs and deliver a working product within tight deadlines.
         </p>
       </div>
 
@@ -113,10 +167,10 @@ function Blog() {
           <h2>Related Posts</h2>
           <div className="related-posts-grid">
             {relatedPosts.map(post => (
-              <Link to={`/blog/${post.id}`} className="related-post-card" key={post.id}>
+              <Link to={`/blogs/${post.id}`} className="related-post-card" key={post.id}>
                 <img src={post.image} alt={post.title} />
                 <h3>{post.title}</h3>
-                <p>{post.date}</p>
+                <p>{formatDate(post.date)}</p>
               </Link>
             ))}
           </div>

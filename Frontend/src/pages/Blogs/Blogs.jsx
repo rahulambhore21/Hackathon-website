@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import './Blogs.css'
+import Navbar from '../../components/Navbar/Navbar';
+import Footer from '../../components/Footer/Footer';
 
 function Blogs() {
   const [blogs, setBlogs] = useState([]);
@@ -24,6 +26,8 @@ function Blogs() {
     : blogs.filter(blog => blog.category === filter);
 
   return (
+    <>
+    <Navbar/>
     <div className="blogs-container">
       <div className="blogs-header">
         <h1>Hackathon Stories</h1>
@@ -62,24 +66,26 @@ function Blogs() {
       ) : (
         <div className="blogs-grid">
           {filteredBlogs.map(blog => (
-            <div className="blog-card" key={blog.id}>
-              <div className="blog-image-container">
-                <img src={blog.image} alt={blog.title} className="blog-image" />
-                <span className={`blog-category ${blog.category}`}>{blog.category}</span>
-              </div>
-              <div className="blog-content">
-                <h3 className="blog-title">{blog.title}</h3>
-                <p className="blog-excerpt">{blog.excerpt}</p>
-                <div className="blog-meta">
-                  <div className="blog-author">
-                    <img src={blog.authorImg} alt={blog.author} className="author-image" />
-                    <span>{blog.author}</span>
-                  </div>
-                  <span className="blog-date">{blog.date}</span>
+            <Link to={`/blogs/${blog.id}`} className="blog-card-link" key={blog.id}>
+              <div className="blog-card">
+                <div className="blog-image-container">
+                  <img src={blog.image} alt={blog.title} className="blog-image" />
+                  <span className={`blog-category ${blog.category}`}>{blog.category}</span>
                 </div>
-                <Link to={`/blog/${blog.id}`} className="read-more-btn">Read More</Link>
+                <div className="blog-content">
+                  <h3 className="blog-title">{blog.title}</h3>
+                  <p className="blog-excerpt">{blog.excerpt}</p>
+                  <div className="blog-meta">
+                    <div className="blog-author">
+                      <img src={blog.authorImg} alt={blog.author} className="author-image" />
+                      <span>{blog.author}</span>
+                    </div>
+                    <span className="blog-date">{blog.date}</span>
+                  </div>
+                  <button className="read-more-btn">Read More</button>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}
@@ -91,6 +97,8 @@ function Blogs() {
       {/* Mock data for blogs */}
       {/* This would typically be in a separate file or fetched from an API */}
     </div>
+    <Footer/>
+    </>
   )
 }
 

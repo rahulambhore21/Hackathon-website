@@ -80,6 +80,12 @@
   align-items: stretch;
 }
 
+.events-grid > a {
+  height: 100%;
+  width: 100%;
+  display: flex;
+}
+
 .events-grid > div {
   height: 100%;
 }
@@ -91,6 +97,27 @@
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.events-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.create-event-btn {
+  background-color: #1e40af;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  transition: background-color 0.2s;
+}
+
+.create-event-btn:hover {
+  background-color: #1e3a8a;
 }
 
 /* Responsive adjustments */

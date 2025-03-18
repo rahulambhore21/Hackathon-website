@@ -12,8 +12,8 @@ function Home() {
     <Navbar/>
       <div className="hero">
         <Hero/>
+
       </div>
-      <div className="section-transition"></div>
       <div className="features">
         <Features/>
       </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import EventCard from '../../ui/eventCard/EventCard';
 import './Events.css';
 import Navbar from '../../components/Navbar/Navbar';
+import { Link } from 'react-router-dom';
 
 function Events() {
   // State for filtering
@@ -86,6 +87,12 @@ function Events() {
       <div className="events-header">
         <h1>Upcoming Hackathons</h1>
         <p>Discover exciting hackathon events and showcase your skills with the developer community</p>
+        
+        <div className="events-actions">
+          <Link to="/add-event" className="create-event-btn">
+            + Create New Hackathon
+          </Link>
+        </div>
       </div>
       
       <div className="events-filters">

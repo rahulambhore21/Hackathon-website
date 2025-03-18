@@ -1,6 +1,6 @@
 .blogs-container {
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 100px auto;
   padding: 40px 20px;
 }
 
@@ -54,6 +54,13 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 30px;
+}
+
+.blog-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  cursor: pointer;
 }
 
 .blog-card {
