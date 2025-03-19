@@ -1,111 +1,74 @@
 import React, { useState, useEffect, useRef } from 'react';
-import backgroundimg from '../../assets/loginbackground1.jpg'
-import axios from 'axios';
+import backgroundimg from '../../assets/loginbackground1.jpg';
 import './Authentication.css';
 import { useNavigate } from 'react-router';
+import { useAuth } from '../../context/AuthContext';
 
 function Authentication() {
+  const { login, register, error, loading } = useAuth();
   const [isSignup, setIsSignup] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    phoneNumber: ''
+    college: '',
+    phone: '',
+    bio: '',
+    location: '',
+    skills: '',
+    profileImage: '',
+    socialLinks: {
+      linkedin: '',
+      github: '',
+      website: ''
+    },
+    emailNotifications: {
+      eventReminders: true,
+      announcements: true,
+      marketing: false
+    }
   });
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const particlesContainerRef = useRef(null);
   const navigate = useNavigate();
-
-  // Create particle effect
-  useEffect(() => {
-    const createParticles = () => {
-      if (!particlesContainerRef.current) return;
-      
-      const container = particlesContainerRef.current;
-      container.innerHTML = '';
-      
-      const numberOfParticles = 20;
-      
-      for (let i = 0; i < numberOfParticles; i++) {
-        const particle = document.createElement('div');
-        particle.classList.add('particle');
-        
-        // Random position
-        const posX = Math.random() * container.offsetWidth;
-        const posY = Math.random() * container.offsetHeight;
-        
-        // Random size
-        const size = Math.random() * 15 + 5;
-        
-        // Random animation duration
-        const duration = Math.random() * 8 + 4;
-        const delay = Math.random() * 5;
-        
-        // Apply styles
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        particle.style.left = `${posX}px`;
-        particle.style.bottom = `${posY}px`;
-        particle.style.animationDuration = `${duration}s`;
-        particle.style.animationDelay = `${delay}s`;
-        
-        container.appendChild(particle);
-      }
-    };
-
-    createParticles();
-    
-    window.addEventListener('resize', createParticles);
-    
-    const interval = setInterval(createParticles, 10000);
-    
-    return () => {
-      window.removeEventListener('resize', createParticles);
-      clearInterval(interval);
-    };
-  }, []);
 
   const validateForm = () => {
     let errors = {};
     let isValid = true;
 
     if (isSignup && !formData.name.trim()) {
-      errors.name = "Name is required";
+      errors.name = 'Name is required';
+      isValid = false;
+    }
+    if (isSignup && !formData.college.trim()) {
+      errors.college = 'College is required';
+      isValid = false;
+    }
+    if (isSignup && !formData.phone.trim()) {
+      errors.phone = 'Phone number is required';
       isValid = false;
     }
 
     if (!formData.email) {
-      errors.email = "Email is required";
+      errors.email = 'Email is required';
       isValid = false;
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = "Email is invalid";
+      errors.email = 'Email is invalid';
       isValid = false;
     }
 
     if (!formData.password) {
-      errors.password = "Password is required";
+      errors.password = 'Password is required';
       isValid = false;
     } else if (formData.password.length < 6) {
-      errors.password = "Password must be at least 6 characters";
+      errors.password = 'Password must be at least 6 characters';
       isValid = false;
     }
 
     if (isSignup && formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = "Passwords do not match";
-      isValid = false;
-    }
-
-    if (isSignup && !formData.phoneNumber) {
-      errors.phoneNumber = "Phone number is required";
-      isValid = false;
-    } else if (isSignup && !/^\d{10}$/.test(formData.phoneNumber)) {
-      errors.phoneNumber = "Please enter a valid 10-digit phone number";
+      errors.confirmPassword = 'Passwords do not match';
       isValid = false;
     }
 
@@ -114,15 +77,29 @@ function Authentication() {
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-    // Clear error when typing
-    if (errors[e.target.name]) {
+    const { name, value, type, checked } = e.target;
+    
+    // Handle nested objects (socialLinks and emailNotifications)
+    if (name.includes('.')) {
+      const [parent, child] = name.split('.');
+      setFormData({
+        ...formData,
+        [parent]: {
+          ...formData[parent],
+          [child]: type === 'checkbox' ? checked : value
+        }
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
+    
+    if (errors[name]) {
       setErrors({
         ...errors,
-        [e.target.name]: null
+        [name]: null,
       });
     }
   };
@@ -130,263 +107,369 @@ function Authentication() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    
-    const url = isSignup ? 'http://localhost:5000/user/signup' : 'http://localhost:5000/user/login';
-    setIsLoading(true);
-    setMessage('');
-    
-    try {
-      const response = await axios.post(url, formData);
-      setMessageType('success');
-      setMessage(response.data.message || (isSignup ? 'Sign up successful!' : 'Login successful!'));
-      
-      if (rememberMe && !isSignup) {
-        localStorage.setItem('userEmail', formData.email);
-      }
-      
-      if (!isSignup) {
-        // Store token or user data if provided by the backend
-        if (response.data.token) {
-          localStorage.setItem('authToken', response.data.token);
-        }
-        
-        // Redirect after a short delay to show the success message
-        setTimeout(() => {
-          navigate('/');
-        }, 1500);
-      } else {
-        // Clear form after signup
-        setFormData({
-          name: '',
-          email: '',
-          password: '',
-          confirmPassword: '',
-          phoneNumber: ''
-        });
-        // Auto switch to login after successful signup
-        setTimeout(() => {
-          setIsSignup(false);
-        }, 1500);
-      }
-    } catch (error) {
-      setMessageType('error');
-      setMessage(error.response?.data?.message || 'Something went wrong. Please try again.');
-      console.error(error);
-    } finally {
-      setIsLoading(false);
+
+    const success = isSignup
+      ? await register({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          college: formData.college,
+          phone: formData.phone,
+          bio: formData.bio || '',
+          location: formData.location || '',
+          skills: formData.skills ? formData.skills.split(',').map(skill => skill.trim()) : [],
+          profileImage: formData.profileImage || '',
+          socialLinks: formData.socialLinks,
+          emailNotifications: formData.emailNotifications
+        })
+      : await login(formData.email, formData.password);
+
+    if (success) {
+      setMessage(isSignup ? 'Sign up successful!' : 'Login successful!');
+      setTimeout(() => navigate('/'), 1500);
     }
   };
 
   const toggleAuthMode = () => {
-    // Add a fade-out effect when toggling
-    const formArea = document.querySelector('.form_area');
-    if (formArea) {
-      formArea.style.opacity = '0';
-      formArea.style.transform = 'translateY(10px)';
-      
-      setTimeout(() => {
-        setIsSignup(!isSignup);
-        setMessage('');
-        setErrors({});
-        
-        // Reset transform and opacity with a slight delay to create an animation
-        setTimeout(() => {
-          formArea.style.opacity = '1';
-          formArea.style.transform = 'translateY(0)';
-        }, 50);
-      }, 300);
-    } else {
-      setIsSignup(!isSignup);
-      setMessage('');
-      setErrors({});
-    }
+    setIsSignup(!isSignup);
+    setMessage('');
+    setErrors({});
   };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const handleForgotPassword = (e) => {
-    e.preventDefault();
-    setMessage("Password reset link sent to your email!");
-    setMessageType("success");
-    // Here you would typically add your actual forgot password logic
-  };
-
-  // Check if there's a remembered email
-  useEffect(() => {
-    const savedEmail = localStorage.getItem('userEmail');
-    if (savedEmail && !isSignup) {
-      setFormData(prev => ({...prev, email: savedEmail}));
-      setRememberMe(true);
-    }
-  }, [isSignup]);
 
   return (
-    <div className='h-screen w-screen justify-center items-center flex overflow-hidden' 
-      style={{ 
-        backgroundImage: `linear-gradient(rgba(21, 25, 40, 0.9), rgba(92, 225, 230, 0.7)), url(${backgroundimg})`, 
-        backgroundSize: 'cover', 
-        backgroundPosition: 'center'
-      }}>
-      <div className="background-animation" ref={particlesContainerRef}></div>
-      <div className="container">
-        <div className="form_area">
-          <p className="title">{isSignup ? 'SIGN UP' : 'LOGIN'}</p>
-          {message && (
-            <div className={`message ${messageType === 'error' ? 'error-message' : 'success-message'}`}>
-              {message}
+    <div
+      className="min-h-screen w-full flex justify-center items-center py-6 px-4"
+      style={{
+        backgroundImage: `linear-gradient(rgba(21, 25, 40, 0.9), rgba(92, 225, 230, 0.7)), url(${backgroundimg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        overflowY: 'auto',
+      }}
+    >
+      {/* Add animated background particles for a more interactive feel */}
+      <div className="background-animation">
+        {Array.from({ length: 15 }).map((_, index) => (
+          <div 
+            key={index}
+            className="particle"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              width: `${Math.random() * 30 + 10}px`,
+              height: `${Math.random() * 30 + 10}px`,
+              animationDelay: `${Math.random() * 5}s`,
+              animationDuration: `${Math.random() * 10 + 5}s`
+            }}
+          />
+        ))}
+      </div>
+      
+      <div className="container max-w-md">
+        <div className="form_area bg-white/10 backdrop-blur-sm rounded-xl p-6 shadow-xl overflow-y-auto max-h-[85vh]">
+          <p className="title text-center text-xl md:text-2xl font-bold mb-2">{isSignup ? 'SIGN UP' : 'LOGIN'}</p>
+          {message && <div className="success-message text-green-500 text-center text-sm mb-2">{message}</div>}
+          {error && <div className="error-message text-red-500 text-center text-sm mb-2">{error}</div>}
+          
+          {/* Make progress indicator optional based on screen size */}
+          {isSignup && (
+            <div className="hidden md:flex justify-center mb-2">
+              <div className="w-full max-w-xs bg-white/10 h-1.5 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-[#6C63FF] to-[#5CE1E6] rounded-full transition-all duration-300"
+                  style={{ width: formData.bio ? '75%' : formData.college ? '50%' : '25%' }}
+                />
+              </div>
             </div>
           )}
-          <form onSubmit={handleSubmit} style={{width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-            {isSignup && (
+          
+          <form onSubmit={handleSubmit} className="space-y-2 mt-2 compact-form">
+            {/* Conditionally render fields based on signup/login state */}
+            {isSignup ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div className="form_group">
+                    <label className="sub_title text-sm" htmlFor="name">Name*</label>
+                    <input
+                      name="name"
+                      placeholder="Enter your full name"
+                      className="form_style py-2"
+                      type="text"
+                      value={formData.name}
+                      onChange={handleChange}
+                    />
+                    {errors.name && <span className="error-text">{errors.name}</span>}
+                  </div>
+                  
+                  <div className="form_group">
+                    <label className="sub_title text-sm" htmlFor="email">Email*</label>
+                    <input
+                      name="email"
+                      placeholder="Enter your email"
+                      className="form_style py-2"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                    />
+                    {errors.email && <span className="error-text">{errors.email}</span>}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div className="form_group">
+                    <label className="sub_title text-sm" htmlFor="college">College*</label>
+                    <input
+                      name="college"
+                      placeholder="Enter your college name"
+                      className="form_style py-2"
+                      type="text"
+                      value={formData.college}
+                      onChange={handleChange}
+                    />
+                    {errors.college && <span className="error-text">{errors.college}</span>}
+                  </div>
+                  
+                  <div className="form_group">
+                    <label className="sub_title text-sm" htmlFor="phone">Phone*</label>
+                    <input
+                      name="phone"
+                      placeholder="Enter your phone number"
+                      className="form_style py-2"
+                      type="text"
+                      value={formData.phone}
+                      onChange={handleChange}
+                    />
+                    {errors.phone && <span className="error-text">{errors.phone}</span>}
+                  </div>
+                </div>
+                
+                {/* Optional fields in collapsible section */}
+                <div className="form_group">
+                  <details className="w-full">
+                    <summary className="sub_title text-sm cursor-pointer mb-1">Additional Info (Optional)</summary>
+                    <div className="space-y-2 pt-1">
+                      <div className="form_group">
+                        <label className="sub_title text-sm" htmlFor="bio">Bio</label>
+                        <textarea
+                          name="bio"
+                          placeholder="Tell us about yourself"
+                          className="form_style resize-none h-16"
+                          value={formData.bio}
+                          onChange={handleChange}
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div className="form_group">
+                          <label className="sub_title text-sm" htmlFor="location">Location</label>
+                          <input
+                            name="location"
+                            placeholder="Enter your location"
+                            className="form_style py-2"
+                            type="text"
+                            value={formData.location}
+                            onChange={handleChange}
+                          />
+                        </div>
+                        
+                        <div className="form_group">
+                          <label className="sub_title text-sm" htmlFor="skills">Skills</label>
+                          <input
+                            name="skills"
+                            placeholder="Enter skills (comma separated)"
+                            className="form_style py-2"
+                            type="text"
+                            value={formData.skills}
+                            onChange={handleChange}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="form_group">
+                        <label className="sub_title text-sm" htmlFor="profileImage">Profile Image URL</label>
+                        <input
+                          name="profileImage"
+                          placeholder="Enter profile image URL"
+                          className="form_style py-2"
+                          type="text"
+                          value={formData.profileImage}
+                          onChange={handleChange}
+                        />
+                      </div>
+                      
+                      {/* Social Links Section */}
+                      <div className="form_group">
+                        <label className="sub_title text-sm">Social Links</label>
+                        <div className="space-y-2">
+                          <div className="form_group">
+                            <input
+                              name="socialLinks.linkedin"
+                              placeholder="LinkedIn URL"
+                              className="form_style py-2"
+                              type="text"
+                              value={formData.socialLinks.linkedin}
+                              onChange={handleChange}
+                            />
+                          </div>
+                          <div className="form_group">
+                            <input
+                              name="socialLinks.github"
+                              placeholder="GitHub URL"
+                              className="form_style py-2"
+                              type="text"
+                              value={formData.socialLinks.github}
+                              onChange={handleChange}
+                            />
+                          </div>
+                          <div className="form_group">
+                            <input
+                              name="socialLinks.website"
+                              placeholder="Personal Website URL"
+                              className="form_style py-2"
+                              type="text"
+                              value={formData.socialLinks.website}
+                              onChange={handleChange}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Email Notifications Section */}
+                      <div className="form_group">
+                        <label className="sub_title text-sm">Email Notifications</label>
+                        <div className="space-y-2 mt-2">
+                          <div className="checkbox-container">
+                            <label>
+                              <input
+                                name="emailNotifications.eventReminders"
+                                type="checkbox"
+                                checked={formData.emailNotifications.eventReminders}
+                                onChange={handleChange}
+                              />
+                              <span className="checkmark"></span>
+                              Event Reminders
+                            </label>
+                          </div>
+                          <div className="checkbox-container">
+                            <label>
+                              <input
+                                name="emailNotifications.announcements"
+                                type="checkbox"
+                                checked={formData.emailNotifications.announcements}
+                                onChange={handleChange}
+                              />
+                              <span className="checkmark"></span>
+                              Announcements
+                            </label>
+                          </div>
+                          <div className="checkbox-container">
+                            <label>
+                              <input
+                                name="emailNotifications.marketing"
+                                type="checkbox"
+                                checked={formData.emailNotifications.marketing}
+                                onChange={handleChange}
+                              />
+                              <span className="checkmark"></span>
+                              Marketing
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </details>
+                </div>
+              </>
+            ) : (
               <div className="form_group">
-                <label className="sub_title" htmlFor="name">Name</label>
-                <input 
-                  name="name" 
-                  placeholder="Enter your full name" 
-                  className="form_style" 
-                  type="text" 
-                  value={formData.name} 
-                  onChange={handleChange} 
+                <label className="sub_title" htmlFor="email">Email</label>
+                <input
+                  name="email"
+                  placeholder="Enter your email"
+                  className="form_style"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
                 />
-                {errors.name && <span style={{color: 'rgba(255, 87, 87, 0.9)', fontSize: '0.8rem', marginTop: '5px'}}>{errors.name}</span>}
+                {errors.email && <span className="error-text">{errors.email}</span>}
               </div>
             )}
+            
+            {/* Password fields */}
             <div className="form_group">
-              <label className="sub_title" htmlFor="email">Email</label>
-              <input 
-                name="email" 
-                placeholder="Enter your email" 
-                id="email" 
-                className="form_style" 
-                type="email" 
-                value={formData.email} 
-                onChange={handleChange} 
-              />
-              {errors.email && <span style={{color: 'rgba(255, 87, 87, 0.9)', fontSize: '0.8rem', marginTop: '5px'}}>{errors.email}</span>}
-            </div>
-            {isSignup && (
-              <div className="form_group">
-                <label className="sub_title" htmlFor="phoneNumber">Phone Number</label>
-                <input 
-                  name="phoneNumber" 
-                  placeholder="Enter your phone number" 
-                  className="form_style" 
-                  type="tel" 
-                  value={formData.phoneNumber} 
-                  onChange={handleChange} 
-                />
-                {errors.phoneNumber && <span style={{color: 'rgba(255, 87, 87, 0.9)', fontSize: '0.8rem', marginTop: '5px'}}>{errors.phoneNumber}</span>}
-              </div>
-            )}
-            <div className="form_group">
-              <label className="sub_title" htmlFor="password">Password</label>
+              <label className="sub_title text-sm" htmlFor="password">Password*</label>
               <div className="password-field-container">
-                <input 
-                  name="password" 
-                  placeholder="Enter your password" 
-                  id="password" 
-                  className="form_style" 
-                  type={showPassword ? "text" : "password"} 
-                  value={formData.password} 
-                  onChange={handleChange} 
+                <input
+                  name="password"
+                  placeholder="Enter your password"
+                  className="form_style py-2"
+                  type={showPassword ? "text" : "password"}
+                  value={formData.password}
+                  onChange={handleChange}
                 />
                 <button 
-                  type="button" 
+                  type="button"
                   className="password-toggle" 
-                  onClick={togglePasswordVisibility}
+                  onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? "🙈" : "👁️"}
+                  {showPassword ? "👁️" : "👁️‍🗨️"}
                 </button>
               </div>
-              {errors.password && <span style={{color: 'rgba(255, 87, 87, 0.9)', fontSize: '0.8rem', marginTop: '5px'}}>{errors.password}</span>}
-              {!isSignup && (
-                <div className="forgot-password">
-                  <a href="#" onClick={handleForgotPassword}>Forgot Password?</a>
-                </div>
-              )}
+              {errors.password && <span className="error-text">{errors.password}</span>}
             </div>
             
             {isSignup && (
               <div className="form_group">
-                <label className="sub_title" htmlFor="confirmPassword">Confirm Password</label>
-                <div className="password-field-container">
-                  <input 
-                    name="confirmPassword" 
-                    placeholder="Confirm your password" 
-                    id="confirmPassword" 
-                    className="form_style" 
-                    type={showPassword ? "text" : "password"} 
-                    value={formData.confirmPassword} 
-                    onChange={handleChange} 
-                  />
-                </div>
-                {errors.confirmPassword && <span style={{color: 'rgba(255, 87, 87, 0.9)', fontSize: '0.8rem', marginTop: '5px'}}>{errors.confirmPassword}</span>}
+                <label className="sub_title text-sm" htmlFor="confirmPassword">Confirm Password*</label>
+                <input
+                  name="confirmPassword"
+                  placeholder="Confirm your password"
+                  className="form_style py-2"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                />
+                {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
               </div>
             )}
             
+            {/* Submit button */}
+            <button 
+              className="btn py-2 mt-3" 
+              type="submit" 
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  {isSignup ? 'Signing Up' : 'Logging In'}
+                  <span className="loading-spinner ml-2"></span>
+                </>
+              ) : (
+                isSignup ? 'Sign Up' : 'Login'
+              )}
+            </button>
+            
+            {/* Social login buttons - only for login */}
             {!isSignup && (
-              <div className="checkbox-container">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={() => setRememberMe(!rememberMe)}
-                  />
-                  <span className="checkmark"></span>
-                  Remember me
-                </label>
+              <div className="mt-3">
+                <p className="text-center text-white/70 text-xs mb-2">Or continue with</p>
+                <div className="flex justify-center space-x-4">
+                  <button type="button" className="social-btn" aria-label="Login with Google">
+                    <span className="social-icon">G</span>
+                  </button>
+                  <button type="button" className="social-btn" aria-label="Login with GitHub">
+                    <span className="social-icon">GH</span>
+                  </button>
+                </div>
               </div>
             )}
             
-            {isSignup && (
-              <div className="checkbox-container">
-                <label>
-                  <input
-                    type="checkbox"
-                    name="termsAgreed"
-                    onChange={(e) => {
-                      if (!e.target.checked) {
-                        setErrors({...errors, terms: "You must agree to the terms and conditions"});
-                      } else {
-                        setErrors({...errors, terms: null});
-                      }
-                    }}
-                  />
-                  <span className="checkmark"></span>
-                  I agree to the <a href="#" style={{color: '#5CE1E6'}}>Terms & Conditions</a>
-                </label>
-              </div>
-            )}
-            {errors.terms && (
-              <div style={{width: '100%', textAlign: 'left', marginBottom: '5px'}}>
-                <span style={{color: 'rgba(255, 87, 87, 0.9)', fontSize: '0.8rem'}}>{errors.terms}</span>
-              </div>
-            )}
-            
-            <div style={{width: '90%'}}>
-              <button 
-                className="btn" 
-                type="submit" 
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    {isSignup ? 'SIGNING UP' : 'LOGGING IN'}
-                    <span className="loading-spinner"></span>
-                  </>
-                ) : (
-                  isSignup ? 'SIGN UP' : 'LOGIN'
-                )}
-              </button>
-              <p style={{color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.95rem', margin: '8px 0'}}>
-                {isSignup ? 'Have an Account?' : "Don't have an Account?"}
-                <span className="link" onClick={toggleAuthMode}>
-                  {isSignup ? ' Login!' : ' Sign Up!'}
-                </span>
-              </p>
-            </div>
+            {/* Toggle between signup and login */}
+            <p className="text-center mt-3 text-sm">
+              {isSignup ? 'Have an Account?' : "Don't have an Account?"}{' '}
+              <span className="link" onClick={toggleAuthMode}>
+                {isSignup ? 'Login!' : 'Sign Up!'}
+              </span>
+            </p>
           </form>
         </div>
       </div>

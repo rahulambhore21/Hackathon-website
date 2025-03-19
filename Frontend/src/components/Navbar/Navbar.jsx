@@ -1,16 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { RiMenu3Line, RiCloseLine, RiMoonLine, RiSunLine, RiUser3Line, RiSettings5Line, RiLogoutCircleRLine, RiDashboardLine } from 'react-icons/ri';
 import { NavLink, useNavigate, Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+// Remove the problematic import temporarily
+// import { useNotification } from '../../context/NotificationContext';
 import logo from '../../assets/logo.jpg';
 import './Navbar.css';
 
 const Navbar = () => {
   const [toggleMenu, setToggleMenu] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userName, setUserName] = useState('John Doe'); // Example user name
   const [showDropdown, setShowDropdown] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(true);
+  
+  const { currentUser, logout, loading } = useAuth();
+  // Remove problematic destructuring
+  // const { showSuccess } = useNotification();
   const navigate = useNavigate();
   const location = useLocation();
   const dropdownRef = useRef(null);
@@ -69,19 +74,18 @@ const Navbar = () => {
     navigate(path);
   };
 
-  // Handle user login/logout with animation
-  const handleAuth = () => {
-    if (isLoggedIn) {
-      // Add logout logic here
-      setIsLoggedIn(false);
-      setShowDropdown(false);
-    } else {
-      navigate('/authentication');
-    }
+  // Handle user logout without the notification
+  const handleLogout = () => {
+    logout();
+    // Remove the showSuccess call that's causing the error
+    // showSuccess('Successfully logged out');
+    setShowDropdown(false);
+    navigate('/');
   };
 
   // Get initials from name
   const getInitials = (name) => {
+    if (!name) return 'U';
     return name
       .split(' ')
       .map(part => part[0])
@@ -118,7 +122,9 @@ const Navbar = () => {
         </div>
         
         <div className="navbar-sign">
-          {isLoggedIn ? (
+          {loading ? (
+            <div className="navbar-loading">Loading...</div>
+          ) : currentUser ? (
             <div className="navbar-user-dropdown" ref={dropdownRef}>
               <div 
                 className="navbar-user" 
@@ -126,8 +132,8 @@ const Navbar = () => {
                 aria-expanded={showDropdown}
                 aria-haspopup="true"
               >
-                <div className="user-avatar">{getInitials(userName)}</div>
-                <span className="user-name">Welcome, {userName}</span>
+                <div className="user-avatar">{getInitials(currentUser.name)}</div>
+                <span className="user-name">Welcome, {currentUser.name}</span>
                 <span className="dropdown-arrow">{showDropdown ? '▲' : '▼'}</span>
               </div>
               {showDropdown && (
@@ -142,7 +148,7 @@ const Navbar = () => {
                     <p><RiSettings5Line style={{marginRight: '10px', verticalAlign: 'middle'}} /> Settings</p>
                   </Link>
                   <hr />
-                  <p onClick={handleAuth}><RiLogoutCircleRLine style={{marginRight: '10px', verticalAlign: 'middle'}} /> Logout</p>
+                  <p onClick={handleLogout}><RiLogoutCircleRLine style={{marginRight: '10px', verticalAlign: 'middle'}} /> Logout</p>
                 </div>
               )}
             </div>
@@ -165,11 +171,13 @@ const Navbar = () => {
               <p onClick={() => handleNavigate('/blog')}>Blog</p>
             </div>
             <div className="navbar-menu_container-links-sign">
-              {isLoggedIn ? (
+              {loading ? (
+                <div className="mobile-loading">Loading...</div>
+              ) : currentUser ? (
                 <div className="mobile-user-menu">
                   <div className="mobile-user-header">
-                    <div className="mobile-user-avatar">{getInitials(userName)}</div>
-                    <p>Welcome, {userName}</p>
+                    <div className="mobile-user-avatar">{getInitials(currentUser.name)}</div>
+                    <p>Welcome, {currentUser.name}</p>
                   </div>
                   <p onClick={() => handleNavigate('/profile')}>
                     <RiUser3Line style={{marginRight: '10px'}} /> Profile
@@ -180,7 +188,7 @@ const Navbar = () => {
                   <p onClick={() => handleNavigate('/settings')}>
                     <RiSettings5Line style={{marginRight: '10px'}} /> Settings
                   </p>
-                  <p onClick={handleAuth}>
+                  <p onClick={handleLogout}>
                     <RiLogoutCircleRLine style={{marginRight: '10px'}} /> Logout
                   </p>
                 </div>

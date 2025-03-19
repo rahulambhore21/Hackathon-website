@@ -7,6 +7,21 @@ import { useEvents } from '../../context/EventsContext';
 import { useNotification } from '../../context/NotificationContext';
 import EventCard from '../../ui/eventCard/EventCard';
 
+// Default profile data outside the component to avoid re-creation on every render
+const DEFAULT_PROFILE = {
+  name: 'Rahul Sharma',
+  email: 'rahul.sharma@example.com',
+  phone: '9876543210',
+  bio: 'Passionate full-stack developer with 3+ years of experience in React, Node.js, and cloud technologies. Regular hackathon participant and open-source contributor. Currently focused on building innovative solutions for real-world problems. Looking to collaborate on projects related to AI and sustainable technology.',
+  location: 'Bangalore, Karnataka, India',
+  skills: ['React', 'Node.js', 'JavaScript', 'MongoDB', 'Express', 'UI/UX', 'AWS', 'Docker', 'TypeScript', 'GraphQL'],
+  linkedin: 'https://linkedin.com/in/rahulsharma',
+  github: 'https://github.com/rahulsharma-dev',
+  website: 'https://rahulsharma.dev'
+};
+
+const DEFAULT_PROFILE_IMAGE = 'https://randomuser.me/api/portraits/men/32.jpg';
+
 function Profile() {
   const navigate = useNavigate();
   
@@ -24,90 +39,56 @@ function Profile() {
   // States for profile management
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
-  const [profileImage, setProfileImage] = useState(null);
+  const [profileImage, setProfileImage] = useState(DEFAULT_PROFILE_IMAGE);
   const [profileImageFile, setProfileImageFile] = useState(null);
-  const [userProfile, setUserProfile] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    bio: '',
-    location: '',
-    skills: [],
-    linkedin: '',
-    github: '',
-    website: ''
-  });
+  const [userProfile, setUserProfile] = useState(DEFAULT_PROFILE);
   
   // Mock registered events (in a real app, this would come from the backend)
   const [registeredEvents, setRegisteredEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Change to false initially
+  // Add a flag to track if user data was loaded to prevent unnecessary updates
+  const [userDataLoaded, setUserDataLoaded] = useState(false);
 
-  // Safe check for authenticated
-  const checkAuthentication = () => {
-    if (typeof isAuthenticated === 'function') {
-      return isAuthenticated();
-    }
-    return !!currentUser; // Fallback if isAuthenticated is not available
-  };
+  // Safe check for authenticated - simplified to reduce potential issues
+  const checkAuthentication = () => !!currentUser;
 
   // Redirect if not logged in
   useEffect(() => {
-    if (!checkAuthentication()) {
-      // Only navigate if we're sure we're not authenticated
+    // Simple check without calling state setters
+    if (!currentUser && !window.location.pathname.includes('authentication')) {
       navigate('/authentication');
     }
   }, [currentUser, navigate]);
 
-  // Safe wrapper for logout function
-  const handleLogout = () => {
-    if (typeof logout === 'function') {
-      logout();
-      if (typeof showSuccess === 'function') {
-        showSuccess('Logout successful!');
-      }
-      navigate('/');
-    } else {
-      console.error('Logout function not available');
-      navigate('/');
-    }
-  };
-  
-  // Safe wrapper for showing errors
-  const safeShowError = (message) => {
-    if (typeof showError === 'function') {
-      showError(message);
-    } else {
-      console.error(message);
-    }
-  };
-
-  // Load user data
+  // Load user data - Fixed to prevent infinite updates
   useEffect(() => {
-    // Always provide default data regardless of currentUser
-    setUserProfile({
-      name: currentUser?.name || 'Rahul Sharma',
-      email: currentUser?.email || 'rahul.sharma@example.com',
-      phone: '9876543210',
-      bio: 'Passionate full-stack developer with 3+ years of experience in React, Node.js, and cloud technologies. Regular hackathon participant and open-source contributor. Currently focused on building innovative solutions for real-world problems. Looking to collaborate on projects related to AI and sustainable technology.',
-      location: 'Bangalore, Karnataka, India',
-      skills: ['React', 'Node.js', 'JavaScript', 'MongoDB', 'Express', 'UI/UX', 'AWS', 'Docker', 'TypeScript', 'GraphQL'],
-      linkedin: 'https://linkedin.com/in/rahulsharma',
-      github: 'https://github.com/rahulsharma-dev',
-      website: 'https://rahulsharma.dev'
-    });
+    // Only run once when component mounts and when currentUser changes
+    if (!userDataLoaded && currentUser) {
+      setUserProfile(prev => ({
+        ...prev,
+        name: currentUser.name || prev.name,
+        email: currentUser.email || prev.email,
+      }));
+      setUserDataLoaded(true);
+    }
+  }, [currentUser, userDataLoaded]);
 
-    // Default profile image
-    setProfileImage('https://randomuser.me/api/portraits/men/32.jpg');
-    
-    // Mock loading registered events (simulating API call)
-    setLoading(true);
-    setTimeout(() => {
-      // Get first 3 events as mock registered events, or empty array if events is undefined
-      const mockRegistered = events?.slice(0, 3) || [];
-      setRegisteredEvents(mockRegistered);
-      setLoading(false);
-    }, 1000);
-  }, [currentUser, events]);
+  // Separate useEffect for loading registered events - simplified to reduce potential issues
+  useEffect(() => {
+    if (events.length > 0 && !registeredEvents.length) {
+      // Only load once if we have events but no registered events yet
+      setLoading(true);
+      
+      const timer = setTimeout(() => {
+        // Get first 3 events as mock registered events
+        const mockRegistered = events.slice(0, 3);
+        setRegisteredEvents(mockRegistered);
+        setLoading(false);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [events, registeredEvents.length]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -158,23 +139,20 @@ function Profile() {
     // Reset form to original data
     if (currentUser) {
       setUserProfile({
-        name: currentUser.name || 'Rahul Sharma',
-        email: currentUser.email || 'rahul.sharma@example.com',
-        phone: '9876543210',
-        bio: 'Passionate full-stack developer with 3+ years of experience in React, Node.js, and cloud technologies. Regular hackathon participant and open-source contributor. Currently focused on building innovative solutions for real-world problems. Looking to collaborate on projects related to AI and sustainable technology.',
-        location: 'Bangalore, Karnataka, India',
-        skills: ['React', 'Node.js', 'JavaScript', 'MongoDB', 'Express', 'UI/UX', 'AWS', 'Docker', 'TypeScript', 'GraphQL'],
-        linkedin: 'https://linkedin.com/in/rahulsharma',
-        github: 'https://github.com/rahulsharma-dev',
-        website: 'https://rahulsharma.dev'
+        ...DEFAULT_PROFILE,
+        name: currentUser.name || DEFAULT_PROFILE.name,
+        email: currentUser.email || DEFAULT_PROFILE.email,
       });
-      setProfileImage('https://randomuser.me/api/portraits/men/32.jpg');
+      setProfileImage(DEFAULT_PROFILE_IMAGE);
+    } else {
+      setUserProfile(DEFAULT_PROFILE);
+      setProfileImage(DEFAULT_PROFILE_IMAGE);
     }
     setIsEditing(false);
   };
 
-  // Render loading state - change to only show when specifically loading profile data
-  if (loading && !userProfile.name) {
+  // Render loading state - simplified to make sure we don't get stuck
+  if (loading && !registeredEvents.length) {
     return (
       <>
         <Navbar />
@@ -199,7 +177,7 @@ function Profile() {
                   <img 
                     src={profileImage} 
                     alt={userProfile.name} 
-                    className="profile-avatar"
+                    className="profile-avatar" 
                   />
                   <label htmlFor="profile-image-upload" className="profile-avatar-edit-icon">
                     <i className="fas fa-camera"></i>
@@ -326,7 +304,7 @@ function Profile() {
                     <textarea 
                       name="bio" 
                       value={userProfile.bio} 
-                      onChange={handleInputChange}
+                      onChange={handleInputChange} 
                       rows="4"
                     ></textarea>
                   </div>
@@ -391,7 +369,6 @@ function Profile() {
                   <div className="profile-bio">
                     <p>{userProfile.bio}</p>
                   </div>
-
                   <div className="profile-info-grid">
                     <div className="profile-info-item">
                       <div className="profile-info-label">
@@ -399,14 +376,12 @@ function Profile() {
                       </div>
                       <div className="profile-info-value">{userProfile.email}</div>
                     </div>
-
                     <div className="profile-info-item">
                       <div className="profile-info-label">
                         <i className="fas fa-phone"></i> Phone
                       </div>
                       <div className="profile-info-value">{userProfile.phone}</div>
                     </div>
-
                     <div className="profile-info-item">
                       <div className="profile-info-label">
                         <i className="fas fa-map-marker-alt"></i> Location
@@ -414,7 +389,6 @@ function Profile() {
                       <div className="profile-info-value">{userProfile.location}</div>
                     </div>
                   </div>
-
                   <div className="profile-skills">
                     <h3>Skills</h3>
                     <div className="profile-skills-list">
@@ -441,7 +415,6 @@ function Profile() {
                   <i className="fas fa-search"></i> Find Events
                 </button>
               </div>
-
               {loading ? (
                 <div className="profile-loading">
                   <div className="profile-loading-spinner"></div>
@@ -481,7 +454,6 @@ function Profile() {
               <div className="profile-section-header">
                 <h2>Account Settings</h2>
               </div>
-
               <div className="profile-settings-options">
                 <div className="profile-settings-group">
                   <h3>Password</h3>
@@ -489,7 +461,6 @@ function Profile() {
                     Change Password
                   </button>
                 </div>
-
                 <div className="profile-settings-group">
                   <h3>Email Notifications</h3>
                   <div className="profile-settings-toggle">
@@ -514,7 +485,6 @@ function Profile() {
                     <span>Marketing emails</span>
                   </div>
                 </div>
-
                 <div className="profile-settings-group profile-danger-zone">
                   <h3>Danger Zone</h3>
                   <button 
