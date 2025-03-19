@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Profile.css';
 import Navbar from '../../components/Navbar/Navbar';
+import ChangePasswordModal from '../../components/ChangePasswordModal/ChangePasswordModal';
 import { useAuth } from '../../context/AuthContext';
 import { useEvents } from '../../context/EventsContext';
 import { useNotification } from '../../context/NotificationContext';
@@ -49,6 +50,9 @@ function Profile() {
   // Add a flag to track if user data was loaded to prevent unnecessary updates
   const [userDataLoaded, setUserDataLoaded] = useState(false);
 
+  // State for change password modal
+  const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
+
   // Safe check for authenticated - simplified to reduce potential issues
   const checkAuthentication = () => !!currentUser;
 
@@ -89,6 +93,29 @@ function Profile() {
       return () => clearTimeout(timer);
     }
   }, [events, registeredEvents.length]);
+
+  // Safe notification function to prevent errors if showError is undefined
+  const safeShowError = (message) => {
+    if (typeof showError === 'function') {
+      showError(message);
+    } else {
+      console.error(message);
+    }
+  };
+
+  // Handle user logout
+  const handleLogout = () => {
+    if (typeof logout === 'function') {
+      logout();
+      navigate('/');
+      if (typeof showSuccess === 'function') {
+        showSuccess('Logged out successfully');
+      }
+    } else {
+      console.error('Logout function not available');
+      navigate('/');
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -149,6 +176,16 @@ function Profile() {
       setProfileImage(DEFAULT_PROFILE_IMAGE);
     }
     setIsEditing(false);
+  };
+
+  // Handle opening change password modal
+  const handleOpenChangePasswordModal = () => {
+    setChangePasswordModalOpen(true);
+  };
+
+  // Handle closing change password modal
+  const handleCloseChangePasswordModal = () => {
+    setChangePasswordModalOpen(false);
   };
 
   // Render loading state - simplified to make sure we don't get stuck
@@ -457,7 +494,10 @@ function Profile() {
               <div className="profile-settings-options">
                 <div className="profile-settings-group">
                   <h3>Password</h3>
-                  <button className="profile-settings-button">
+                  <button 
+                    className="profile-settings-button"
+                    onClick={handleOpenChangePasswordModal}
+                  >
                     Change Password
                   </button>
                 </div>
@@ -502,6 +542,12 @@ function Profile() {
           )}
         </div>
       </div>
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal 
+        isOpen={changePasswordModalOpen} 
+        onClose={handleCloseChangePasswordModal} 
+      />
     </>
   );
 }

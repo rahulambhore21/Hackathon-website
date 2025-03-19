@@ -79,7 +79,7 @@ router.post('/', auth, adminOnly, upload.single('img'), async (req, res) => {
 // Get All Events with filtering
 router.get('/', async (req, res) => {
   try {
-    const { category, search, upcoming, sort } = req.query;
+    const { category, search, upcoming, sort, createdBy } = req.query;
     
     // Build query
     let query = {};
@@ -100,6 +100,11 @@ router.get('/', async (req, res) => {
     // Only upcoming events (date >= today)
     if (upcoming === 'true') {
       query.date = { $gte: new Date() };
+    }
+    
+    // Filter by creator
+    if (createdBy) {
+      query.createdBy = createdBy;
     }
     
     // Build sort options

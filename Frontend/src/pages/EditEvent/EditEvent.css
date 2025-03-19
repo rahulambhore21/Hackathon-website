@@ -1,0 +1,17 @@
+/* Reuse the existing AddEvent styles */
+.current-image {
+  margin-bottom: 15px;
+}
+
+.current-image p {
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.current-image-preview {
+  max-width: 100%;
+  height: auto;
+  max-height: 200px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}

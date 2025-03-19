@@ -1,19 +1,24 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // Add axios import
-import './AddEvent.css';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import axios from 'axios';
+import './EditEvent.css';
 import Navbar from '../../components/Navbar/Navbar';
-import { useAuth } from '../../context/AuthContext'; // Import the auth context
+import { useAuth } from '../../context/AuthContext';
+import { useNotification } from '../../context/NotificationContext';
 
-const AddEvent = () => {
+const EditEvent = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAuth() || {}; // Get the current user from context
+  const { id } = useParams();
+  const { currentUser } = useAuth() || {};
+  const { showSuccess, showError } = useNotification() || {};
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState(null);
   
-  // State for the form fields
+  // State for the form fields (initialized with empty values, will be populated from API)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -53,6 +58,68 @@ const AddEvent = () => {
     'Other'
   ];
 
+  // Fetch existing event data
+  useEffect(() => {
+    const fetchEventDetails = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://localhost:5000/api/events/${id}`);
+        const event = response.data;
+        
+        // Format date for input
+        const eventDate = new Date(event.date);
+        const formattedDate = eventDate.toISOString().split('T')[0];
+        
+        // Format registration deadline for input
+        const deadlineDate = new Date(event.registrationDeadline);
+        const formattedDeadline = deadlineDate.toISOString().split('T')[0];
+        
+        // Set image preview
+        if (event.img) {
+          setPreviewImage(event.img.startsWith('http') 
+            ? event.img 
+            : `http://localhost:5000${event.img}`);
+        }
+        
+        // Set form data from event
+        setFormData({
+          title: event.title || '',
+          description: event.description || '',
+          date: formattedDate || '',
+          time: event.time || '',
+          location: event.location || '',
+          category: event.category || '',
+          price: event.price || '',
+          registrationDeadline: formattedDeadline || '',
+          eligibility: event.eligibility || '',
+          maxTeamSize: event.maxTeamSize || 4,
+          format: event.format || '',
+          prizes: event.prizes && event.prizes.length > 0 ? event.prizes : [
+            { position: '1st Place', prize: '' },
+          ],
+          sponsors: event.sponsors && event.sponsors.length > 0 ? event.sponsors : [''],
+          faqs: event.faqs && event.faqs.length > 0 ? event.faqs : [
+            { question: '', answer: '' }
+          ]
+        });
+        
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching event details:', err);
+        setError('Failed to load event details. Please try again.');
+        setLoading(false);
+        
+        if (showError) {
+          showError('Failed to load event details');
+        }
+      }
+    };
+
+    fetchEventDetails();
+  }, [id, showError]);
+
   // Handle form input changes
   const handleChange = (e) => {
     const { name, value, type } = e.target;
@@ -79,7 +146,6 @@ const AddEvent = () => {
       if (file.size > 5 * 1024 * 1024) {
         setError('Image size exceeds 5MB limit. Please choose a smaller image.');
         e.target.value = null; // Clear the file input
-        setPreviewImage(null);
         return;
       }
       
@@ -88,7 +154,6 @@ const AddEvent = () => {
       if (!validTypes.includes(file.type)) {
         setError('Invalid file type. Please upload a JPG, PNG, or GIF image.');
         e.target.value = null; // Clear the file input
-        setPreviewImage(null);
         return;
       }
       
@@ -97,8 +162,6 @@ const AddEvent = () => {
         setPreviewImage(reader.result);
       };
       reader.readAsDataURL(file);
-    } else {
-      setPreviewImage(null);
     }
   };
 
@@ -218,19 +281,6 @@ const AddEvent = () => {
       }
     }
     
-    // Check if an image was uploaded
-    const fileInput = document.querySelector('#img');
-    if (!fileInput.files[0] && !previewImage) {
-      setError('Please upload an event image.');
-      return false;
-    }
-    
-    // Check if at least one prize is filled
-    if (formData.prizes.length === 0 || !formData.prizes[0].prize) {
-      setError('Please add at least one prize.');
-      return false;
-    }
-    
     // Check if format is filled
     if (!formData.format) {
       setError('Please describe the event format.');
@@ -241,16 +291,6 @@ const AddEvent = () => {
     const today = new Date();
     const eventDate = new Date(formData.date);
     const registrationDeadline = new Date(formData.registrationDeadline);
-    
-    if (registrationDeadline < today) {
-      setError('Registration deadline cannot be in the past.');
-      return false;
-    }
-    
-    if (eventDate < today) {
-      setError('Event date cannot be in the past.');
-      return false;
-    }
     
     if (registrationDeadline > eventDate) {
       setError('Registration deadline must be before the event date.');
@@ -270,9 +310,11 @@ const AddEvent = () => {
       return;
     }
     
-    // Check if user is logged in and is an admin
+    // Check if user is logged in and has proper permissions
     if (!currentUser) {
-      setError('You must be logged in to create an event.');
+      setError('You must be logged in to update an event.');
+      if (showError) showError('Authentication required');
+      navigate('/authentication');
       return;
     }
     
@@ -304,20 +346,14 @@ const AddEvent = () => {
       const fileInput = document.querySelector('#img');
       if (fileInput.files.length > 0) {
         eventData.append('img', fileInput.files[0]);
-      } else if (previewImage) {
-        // If we have a preview but no file (unlikely scenario but just in case)
-        // Convert base64 to blob and append
-        const response = await fetch(previewImage);
-        const blob = await response.blob();
-        eventData.append('img', blob, 'image.jpg');
       }
       
       // Get the token from localStorage
       const token = localStorage.getItem('token');
       
-      // Make the API call with the FormData
-      const response = await axios.post(
-        'http://localhost:5000/api/events', 
+      // Make the API call to update the event
+      await axios.put(
+        `http://localhost:5000/api/events/${id}`, 
         eventData,
         { 
           headers: { 
@@ -327,29 +363,43 @@ const AddEvent = () => {
         }
       );
       
-      setSuccess('Event created successfully!');
+      setSuccess('Event updated successfully!');
+      if (showSuccess) showSuccess('Event updated successfully!');
       setIsSubmitting(false);
       
-      // Redirect to the new event page after success
+      // Redirect to the event page after success
       setTimeout(() => {
-        navigate(`/event/${response.data._id}`);
+        navigate(`/event/${id}`);
       }, 2000);
       
     } catch (err) {
-      console.error('Error creating event:', err);
-      const errorMessage = err.response?.data?.message || 'Failed to create event. Please try again.';
+      console.error('Error updating event:', err);
+      const errorMessage = err.response?.data?.message || 'Failed to update event. Please try again.';
       setError(errorMessage);
+      if (showError) showError(errorMessage);
       setIsSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading event details...</p>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
       <Navbar />
       <div className="add-event-container">
         <div className="add-event-header">
-          <h1>Create New Hackathon Event</h1>
-          <p>Fill in the details below to create a new hackathon event</p>
+          <h1>Edit Hackathon Event</h1>
+          <p>Update the details of your hackathon event</p>
         </div>
 
         {success && (
@@ -513,7 +563,13 @@ const AddEvent = () => {
             <h2>Event Image</h2>
             
             <div className="form-group image-upload">
-              <label htmlFor="img">Event Banner Image *</label>
+              <label htmlFor="img">Event Banner Image</label>
+              {previewImage && (
+                <div className="current-image">
+                  <p>Current image:</p>
+                  <img src={previewImage} alt="Current event banner" className="current-image-preview" />
+                </div>
+              )}
               <input 
                 type="file"
                 id="img"
@@ -521,7 +577,6 @@ const AddEvent = () => {
                 accept="image/jpeg,image/png,image/gif"
                 onChange={handleImageChange}
                 className="file-input"
-                required
               />
               <div className="file-input-wrapper">
                 <button 
@@ -529,18 +584,12 @@ const AddEvent = () => {
                   className="file-input-button"
                   onClick={() => document.getElementById('img').click()}
                 >
-                  Choose Image
+                  Change Image
                 </button>
                 <span>
-                  {previewImage ? 'Image selected' : 'No image selected'}
+                  Leave empty to keep current image
                 </span>
               </div>
-              
-              {previewImage && (
-                <div className="image-preview">
-                  <img src={previewImage} alt="Event preview" />
-                </div>
-              )}
               <p className="input-help">Recommended size: 1200 x 600 pixels. Max file size: 5MB</p>
             </div>
           </div>
@@ -704,7 +753,7 @@ const AddEvent = () => {
             <button 
               type="button" 
               className="cancel-btn"
-              onClick={() => navigate('/events')}
+              onClick={() => navigate('/my-hackathons')}
             >
               Cancel
             </button>
@@ -713,7 +762,7 @@ const AddEvent = () => {
               className="submit-btn"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Creating Event...' : 'Create Event'}
+              {isSubmitting ? 'Updating Event...' : 'Update Event'}
             </button>
           </div>
         </form>
@@ -722,4 +771,4 @@ const AddEvent = () => {
   );
 };
 
-export default AddEvent;
+export default EditEvent;
