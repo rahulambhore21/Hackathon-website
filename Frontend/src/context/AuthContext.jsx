@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [authInitialized, setAuthInitialized] = useState(false);
   const [error, setError] = useState(null);
+  const [showPreferences, setShowPreferences] = useState(false);
 
   // Function to get user data from token
   const loadUserFromToken = async () => {
@@ -38,6 +39,12 @@ export const AuthProvider = ({ children }) => {
         // Include other user properties as needed
         ...userData
       });
+      
+      // Check if user needs to complete preferences
+      // If user has no preferences/profile data, we'll show the preferences form
+      if (!userData.preferences && !userData.profileCompleted) {
+        setShowPreferences(true);
+      }
     } catch (err) {
       console.error('Error loading user:', err);
       // Don't remove token on network errors, only on auth failures
@@ -71,6 +78,12 @@ export const AuthProvider = ({ children }) => {
       
       localStorage.setItem('token', token);
       setCurrentUser(user);
+      
+      // Check if user needs to complete preferences
+      if (!user.preferences && !user.profileCompleted) {
+        setShowPreferences(true);
+      }
+      
       return user;
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Login failed. Please try again.';
@@ -94,6 +107,10 @@ export const AuthProvider = ({ children }) => {
       
       localStorage.setItem('token', token);
       setCurrentUser(user);
+      
+      // Always show preferences after new registration
+      setShowPreferences(true);
+      
       return user;
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Registration failed. Please try again.';
@@ -113,6 +130,42 @@ export const AuthProvider = ({ children }) => {
     setAuthInitialized(true);
   };
 
+  // Update user profile
+  const updateUserProfile = async (profileData) => {
+    if (!currentUser) return null;
+    
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No authentication token');
+      
+      const response = await axios.put(
+        'http://localhost:5000/api/profiles',
+        profileData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      // Update the current user with the updated profile data
+      setCurrentUser(prev => ({
+        ...prev,
+        ...response.data,
+        profileCompleted: true
+      }));
+      
+      // Preferences form no longer needed
+      setShowPreferences(false);
+      
+      return response.data;
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      throw err;
+    }
+  };
+
+  // Complete preferences
+  const completePreferences = () => {
+    setShowPreferences(false);
+  };
+
   // Check if user is authenticated
   const isAuthenticated = () => {
     return !!currentUser && !!localStorage.getItem('token');
@@ -123,11 +176,14 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     authInitialized,
+    showPreferences,
     login,
     register,
     logout,
     isAuthenticated,
-    loadUserFromToken
+    loadUserFromToken,
+    updateUserProfile,
+    completePreferences
   };
 
   return (

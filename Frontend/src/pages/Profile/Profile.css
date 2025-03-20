@@ -280,6 +280,17 @@
   color: #333;
 }
 
+.profile-info-value a {
+  color: #3498db;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.profile-info-value a:hover {
+  color: #2980b9;
+  text-decoration: underline;
+}
+
 /* Skills */
 .profile-skills {
   margin-top: 20px;
@@ -612,5 +623,121 @@
   .profile-skill-tag {
     font-size: 12px; /* Smaller skills tags */
     padding: 4px 8px;
+  }
+}
+
+/* Add these new styles to your existing Profile.css file */
+
+.profile-specialty {
+  font-size: 1.1rem;
+  color: #cccccc;
+  margin: -10px 0 15px;
+}
+
+.profile-skills-section,
+.profile-interests-section {
+  margin-top: 25px;
+}
+
+.profile-skills-section h3,
+.profile-interests-section h3 {
+  font-size: 1.1rem;
+  color: #aaa;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
+}
+
+.profile-skills,
+.profile-interests {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.profile-skill-tag {
+  background: rgba(255, 72, 32, 0.15);
+  color: #FF4820;
+  padding: 6px 12px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  display: inline-block;
+  border: 1px solid rgba(255, 72, 32, 0.3);
+}
+
+.profile-interest-tag {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+  padding: 6px 12px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  display: inline-block;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+/* Light theme overrides */
+.light-theme .profile-specialty {
+  color: #555;
+}
+
+.light-theme .profile-skills-section h3,
+.light-theme .profile-interests-section h3 {
+  color: #444;
+  border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Add these new styles for preference sections */
+
+.profile-preferences-section,
+.profile-education-section,
+.profile-birth-section,
+.profile-social-section {
+  margin-top: 30px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.profile-preferences-section h3,
+.profile-education-section h3,
+.profile-birth-section h3,
+.profile-social-section h3 {
+  font-size: 1.2rem;
+  color: #444;
+  margin-bottom: 15px;
+}
+
+.profile-social-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+/* Dark theme compatibility */
+:global(.dark-theme) .profile-preferences-section,
+:global(.dark-theme) .profile-education-section,
+:global(.dark-theme) .profile-birth-section,
+:global(.dark-theme) .profile-social-section {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+:global(.dark-theme) .profile-preferences-section h3,
+:global(.dark-theme) .profile-education-section h3,
+:global(.dark-theme) .profile-birth-section h3,
+:global(.dark-theme) .profile-social-section h3 {
+  color: #ccc;
+}
+
+:global(.dark-theme) .profile-info-value a {
+  color: #3498db;
+}
+
+:global(.dark-theme) .profile-info-value a:hover {
+  color: #5dade2;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .profile-social-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useEvents } from '../../context/EventsContext';
 import { useNotification } from '../../context/NotificationContext';
 import EventCard from '../../ui/eventCard/EventCard';
+import PreferencesForm from '../../components/PreferencesForm/PreferencesForm';
 import axios from 'axios';
 
 // Default profile data outside the component to avoid re-creation on every render
@@ -14,11 +15,8 @@ const DEFAULT_PROFILE = {
   name: 'Rahul Sharma',
   email: 'rahul.sharma@example.com',
   phone: '9876543210',
-  bio: 'Passionate full-stack developer with 3+ years of experience in React, Node.js, and cloud technologies. Regular hackathon participant and open-source contributor. Currently focused on building innovative solutions for real-world problems. Looking to collaborate on projects related to AI and sustainable technology.',
-  location: 'Bangalore, Karnataka, India',
-  skills: ['React', 'Node.js', 'JavaScript', 'MongoDB', 'Express', 'UI/UX', 'AWS', 'Docker', 'TypeScript', 'GraphQL'],
-  linkedin: 'https://linkedin.com/in/rahulsharma',
   github: 'https://github.com/rahulsharma-dev',
+  linkedin: 'https://linkedin.com/in/rahulsharma',
   website: 'https://rahulsharma.dev'
 };
 
@@ -29,7 +27,7 @@ function Profile() {
   
   // Add error handling for context hooks
   const auth = useAuth() || {};
-  const { currentUser, logout, isAuthenticated } = auth;
+  const { currentUser, logout, isAuthenticated, showPreferences } = auth;
   
   // Similar approach for other contexts
   const eventsContext = useEvents() || {};
@@ -47,7 +45,7 @@ function Profile() {
   
   // Mock registered events (in a real app, this would come from the backend)
   const [registeredEvents, setRegisteredEvents] = useState([]);
-  const [loading, setLoading] = useState(false); // Change to false initially
+  const [loading, setLoading] = useState(false);
   // Add a flag to track if user data was loaded to prevent unnecessary updates
   const [userDataLoaded, setUserDataLoaded] = useState(false);
 
@@ -82,6 +80,21 @@ function Profile() {
           ...prev,
           name: currentUser.name || prev.name,
           email: currentUser.email || prev.email,
+          phone: currentUser.phone || prev.phone,
+          // Set social links if available in the user profile
+          github: currentUser.socialLinks?.github || prev.github,
+          linkedin: currentUser.socialLinks?.linkedin || prev.linkedin,
+          website: currentUser.socialLinks?.website || prev.website,
+          // Add new profile data
+          specialty: currentUser.specialty || '',
+          location: currentUser.location || '',
+          skills: Array.isArray(currentUser.skills) ? currentUser.skills.join(', ') : '',
+          interests: currentUser.interests || [],
+          timezone: currentUser.timezone || '',
+          // Education information
+          education: currentUser.education || {},
+          birthMonth: currentUser.birthMonth || '',
+          birthYear: currentUser.birthYear || ''
         }));
       }
       setUserDataLoaded(true);
@@ -177,14 +190,6 @@ function Profile() {
     });
   };
 
-  const handleSkillsChange = (e) => {
-    const skills = e.target.value.split(',').map(skill => skill.trim());
-    setUserProfile({
-      ...userProfile,
-      skills
-    });
-  };
-
   const handleProfileImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -240,6 +245,11 @@ function Profile() {
     setChangePasswordModalOpen(false);
   };
 
+  // If user needs to complete preferences first, show the preferences form
+  if (showPreferences) {
+    return <PreferencesForm />;
+  }
+
   // Render loading state - ensure it correctly shows when loading
   if (activeTab === 'events' && loading) {
     return (
@@ -289,7 +299,9 @@ function Profile() {
               )}
             </div>
             <h1 className="profile-name">{userProfile.name}</h1>
-            <p className="profile-location">{userProfile.location}</p>
+            {userProfile.specialty && (
+              <p className="profile-specialty">{userProfile.specialty}</p>
+            )}
             <div className="profile-social-links">
               {userProfile.github && (
                 <a href={userProfile.github} target="_blank" rel="noopener noreferrer">
@@ -318,6 +330,12 @@ function Profile() {
             <i className="fas fa-user"></i> Profile
           </button>
           <button 
+            className={`profile-tab ${activeTab === 'events' ? 'active' : ''}`}
+            onClick={() => setActiveTab('events')}
+          >
+            <i className="fas fa-calendar-alt"></i> My Events
+          </button>
+          <button 
             className={`profile-tab ${activeTab === 'settings' ? 'active' : ''}`}
             onClick={() => setActiveTab('settings')}
           >
@@ -329,7 +347,7 @@ function Profile() {
           {activeTab === 'profile' && (
             <div className="profile-section">
               <div className="profile-section-header">
-                <h2>About Me</h2>
+                <h2>Personal Information</h2>
                 {!isEditing && (
                   <button 
                     className="profile-edit-button"
@@ -383,22 +401,12 @@ function Profile() {
                   </div>
 
                   <div className="profile-form-group">
-                    <label>Bio</label>
-                    <textarea 
-                      name="bio" 
-                      value={userProfile.bio} 
-                      onChange={handleInputChange} 
-                      rows="4"
-                    ></textarea>
-                  </div>
-
-                  <div className="profile-form-group">
-                    <label>Skills (comma separated)</label>
+                    <label>GitHub URL</label>
                     <input 
-                      type="text" 
-                      name="skills" 
-                      value={userProfile.skills.join(', ')} 
-                      onChange={handleSkillsChange} 
+                      type="url" 
+                      name="github" 
+                      value={userProfile.github} 
+                      onChange={handleInputChange} 
                     />
                   </div>
 
@@ -413,22 +421,23 @@ function Profile() {
                   </div>
 
                   <div className="profile-form-group">
-                    <label>GitHub URL</label>
-                    <input 
-                      type="url" 
-                      name="github" 
-                      value={userProfile.github} 
-                      onChange={handleInputChange} 
-                    />
-                  </div>
-
-                  <div className="profile-form-group">
                     <label>Website URL</label>
                     <input 
                       type="url" 
                       name="website" 
                       value={userProfile.website} 
                       onChange={handleInputChange} 
+                    />
+                  </div>
+
+                  <div className="profile-form-group">
+                    <label>Skills (comma separated)</label>
+                    <input 
+                      type="text" 
+                      name="skills" 
+                      value={userProfile.skills} 
+                      onChange={handleInputChange} 
+                      placeholder="React, Node.js, MongoDB, etc."
                     />
                   </div>
 
@@ -449,9 +458,6 @@ function Profile() {
                 </div>
               ) : (
                 <div className="profile-details">
-                  <div className="profile-bio">
-                    <p>{userProfile.bio}</p>
-                  </div>
                   <div className="profile-info-grid">
                     <div className="profile-info-item">
                       <div className="profile-info-label">
@@ -465,23 +471,221 @@ function Profile() {
                       </div>
                       <div className="profile-info-value">{userProfile.phone}</div>
                     </div>
-                    <div className="profile-info-item">
-                      <div className="profile-info-label">
-                        <i className="fas fa-map-marker-alt"></i> Location
+                    {userProfile.location && (
+                      <div className="profile-info-item">
+                        <div className="profile-info-label">
+                          <i className="fas fa-map-marker-alt"></i> Location
+                        </div>
+                        <div className="profile-info-value">{userProfile.location}</div>
                       </div>
-                      <div className="profile-info-value">{userProfile.location}</div>
+                    )}
+                    {userProfile.timezone && (
+                      <div className="profile-info-item">
+                        <div className="profile-info-label">
+                          <i className="fas fa-globe"></i> Timezone
+                        </div>
+                        <div className="profile-info-value">{userProfile.timezone.replace(/_/g, ' ')}</div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Display preferences information */}
+                  {userProfile.specialty && (
+                    <div className="profile-preferences-section">
+                      <h3>Developer Profile</h3>
+                      <div className="profile-info-item">
+                        <div className="profile-info-label">
+                          <i className="fas fa-laptop-code"></i> Specialty
+                        </div>
+                        <div className="profile-info-value">{userProfile.specialty}</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {userProfile.skills && (
+                    <div className="profile-skills-section">
+                      <h3>Skills</h3>
+                      <div className="profile-skills">
+                        {typeof userProfile.skills === 'string' 
+                          ? userProfile.skills.split(',').map(skill => skill.trim()).filter(Boolean).map((skill, index) => (
+                              <span key={index} className="profile-skill-tag">{skill}</span>
+                            ))
+                          : Array.isArray(userProfile.skills) 
+                            ? userProfile.skills.map((skill, index) => (
+                                <span key={index} className="profile-skill-tag">{skill}</span>
+                              ))
+                            : null
+                        }
+                      </div>
+                    </div>
+                  )}
+
+                  {userProfile.interests && userProfile.interests.length > 0 && (
+                    <div className="profile-interests-section">
+                      <h3>Hackathon Interests</h3>
+                      <div className="profile-interests">
+                        {userProfile.interests.map((interest, index) => (
+                          <span key={index} className="profile-interest-tag">{interest}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Display education information */}
+                  {userProfile.education && (
+                    <div className="profile-education-section">
+                      <h3>Education</h3>
+                      {userProfile.education.occupation && (
+                        <div className="profile-info-item">
+                          <div className="profile-info-label">
+                            <i className="fas fa-briefcase"></i> Occupation
+                          </div>
+                          <div className="profile-info-value">{userProfile.education.occupation}</div>
+                        </div>
+                      )}
+                      
+                      {userProfile.education.occupation === 'Student' && (
+                        <>
+                          {userProfile.education.studentLevel && (
+                            <div className="profile-info-item">
+                              <div className="profile-info-label">
+                                <i className="fas fa-graduation-cap"></i> Education Level
+                              </div>
+                              <div className="profile-info-value">{userProfile.education.studentLevel}</div>
+                            </div>
+                          )}
+                          
+                          {userProfile.education.school && (
+                            <div className="profile-info-item">
+                              <div className="profile-info-label">
+                                <i className="fas fa-school"></i> School
+                              </div>
+                              <div className="profile-info-value">{userProfile.education.school}</div>
+                            </div>
+                          )}
+                          
+                          {(userProfile.education.graduationMonth || userProfile.education.graduationYear) && (
+                            <div className="profile-info-item">
+                              <div className="profile-info-label">
+                                <i className="fas fa-calendar-alt"></i> Expected Graduation
+                              </div>
+                              <div className="profile-info-value">
+                                {userProfile.education.graduationMonth} {userProfile.education.graduationYear}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Display birth information */}
+                  {(userProfile.birthMonth || userProfile.birthYear) && (
+                    <div className="profile-birth-section">
+                      <h3>Personal</h3>
+                      <div className="profile-info-item">
+                        <div className="profile-info-label">
+                          <i className="fas fa-birthday-cake"></i> Birth Date
+                        </div>
+                        <div className="profile-info-value">
+                          {userProfile.birthMonth} {userProfile.birthYear}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Social links section */}
+                  <div className="profile-social-section">
+                    <h3>Social Links</h3>
+                    <div className="profile-social-grid">
+                      {userProfile.github && (
+                        <div className="profile-info-item">
+                          <div className="profile-info-label">
+                            <i className="fab fa-github"></i> GitHub
+                          </div>
+                          <div className="profile-info-value">
+                            <a href={userProfile.github} target="_blank" rel="noopener noreferrer">
+                              {userProfile.github.replace(/(https?:\/\/)?(www\.)?github\.com\//, '')}
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                      {userProfile.linkedin && (
+                        <div className="profile-info-item">
+                          <div className="profile-info-label">
+                            <i className="fab fa-linkedin"></i> LinkedIn
+                          </div>
+                          <div className="profile-info-value">
+                            <a href={userProfile.linkedin} target="_blank" rel="noopener noreferrer">
+                              {userProfile.linkedin.replace(/(https?:\/\/)?(www\.)?linkedin\.com\/in\//, '')}
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                      {userProfile.website && (
+                        <div className="profile-info-item">
+                          <div className="profile-info-label">
+                            <i className="fas fa-globe"></i> Website
+                          </div>
+                          <div className="profile-info-value">
+                            <a href={userProfile.website} target="_blank" rel="noopener noreferrer">
+                              {userProfile.website.replace(/(https?:\/\/)?(www\.)?/, '')}
+                            </a>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="profile-skills">
-                    <h3>Skills</h3>
-                    <div className="profile-skills-list">
-                      {userProfile.skills.map((skill, index) => (
-                        <span key={index} className="profile-skill-tag">
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'events' && (
+            <div className="profile-section">
+              <div className="profile-section-header">
+                <h2>My Registered Events</h2>
+              </div>
+              
+              {registeredEvents.length > 0 ? (
+                <div className="registered-events-grid">
+                  {registeredEvents.map(event => {
+                    const imgUrl = event.img && typeof event.img === 'string' 
+                      ? (event.img.startsWith('http') ? event.img : `http://localhost:5000${event.img}`)
+                      : null;
+                      
+                    const eventDate = event.date 
+                      ? new Date(event.date).toLocaleDateString('en-US', {
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric'
+                        })
+                      : "Upcoming";
+                      
+                    return (
+                      <EventCard
+                        key={event._id}
+                        id={event._id}
+                        title={event.title}
+                        description={event.description}
+                        img={imgUrl}
+                        date={eventDate}
+                        location={event.location || "Virtual"}
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="no-events-message">
+                  <i className="fas fa-calendar-times"></i>
+                  <h3>No registered events</h3>
+                  <p>You haven't registered for any hackathons yet.</p>
+                  <button 
+                    className="browse-events-button"
+                    onClick={() => navigate('/events')}
+                  >
+                    Browse Events
+                  </button>
                 </div>
               )}
             </div>

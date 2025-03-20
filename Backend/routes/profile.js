@@ -18,16 +18,41 @@ router.get('/', auth, async (req, res) => {
 // Update user profile
 router.put('/', auth, async (req, res) => {
   try {
-    const { name, phone, bio, location, skills, socialLinks } = req.body;
+    const { 
+      name, phone, bio, location, skills, socialLinks,
+      specialty, interests, timezone, education, birthMonth, birthYear
+    } = req.body;
+
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
+    // Update basic profile fields
     user.name = name || user.name;
     user.phone = phone || user.phone;
     user.bio = bio || user.bio;
     user.location = location || user.location;
     user.skills = skills || user.skills;
     user.socialLinks = socialLinks || user.socialLinks;
+    
+    // Update preference fields
+    user.specialty = specialty || user.specialty;
+    user.interests = interests || user.interests;
+    user.timezone = timezone || user.timezone;
+    
+    // Update education information
+    if (education) {
+      user.education = {
+        ...user.education,
+        ...education
+      };
+    }
+    
+    // Update birth information
+    user.birthMonth = birthMonth || user.birthMonth;
+    user.birthYear = birthYear || user.birthYear;
+    
+    // Mark profile as completed
+    user.profileCompleted = true;
 
     await user.save();
     res.json(user);

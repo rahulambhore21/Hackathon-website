@@ -10,6 +10,18 @@ const faqSchema = new mongoose.Schema({
   answer: { type: String, required: true }
 });
 
+// Add new sponsorSchema for the enhanced sponsor data
+const sponsorSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  level: { 
+    type: String, 
+    enum: ['Platinum', 'Gold', 'Silver', 'Bronze', 'Partner', 'In-Kind'],
+    default: 'Gold'
+  },
+  website: { type: String },
+  logoUrl: { type: String }
+});
+
 const eventSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
@@ -27,7 +39,13 @@ const eventSchema = new mongoose.Schema({
   maxTeamSize: { type: Number, default: 4 },
   prizes: [prizeSchema],
   format: { type: String },
-  sponsors: [{ type: String }],
+  // Update sponsors field to use the new schema
+  sponsors: {
+    type: [sponsorSchema],
+    default: []
+  },
+  // Keep legacy sponsors field for backward compatibility
+  legacySponsors: [{ type: String }],
   faqs: [faqSchema],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }

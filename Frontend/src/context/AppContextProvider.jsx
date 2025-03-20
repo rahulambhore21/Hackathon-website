@@ -1,18 +1,18 @@
 import React from 'react';
 import { AuthProvider } from './AuthContext';
-import { EventsProvider } from './EventsContext';
 import { NotificationProvider } from './NotificationContext';
+import { EventsProvider } from './EventsContext';
 
-// Combines all context providers into a single provider component
+// This component centralizes all context providers
 const AppContextProvider = ({ children }) => {
   return (
-    <AuthProvider>
-      <EventsProvider>
-        <NotificationProvider>
+    <NotificationProvider>
+      <AuthProvider>
+        <EventsProvider>
           {children}
-        </NotificationProvider>
-      </EventsProvider>
-    </AuthProvider>
+        </EventsProvider>
+      </AuthProvider>
+    </NotificationProvider>
   );
 };
 

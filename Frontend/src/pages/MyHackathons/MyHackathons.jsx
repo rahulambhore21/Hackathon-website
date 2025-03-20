@@ -24,9 +24,7 @@ const MyHackathons = () => {
     const fetchUserEvents = async () => {
       // Skip fetching if auth is still loading or user isn't logged in
       if (!currentUser?.id) {
-        if (!loading) {
-          navigate('/authentication');
-        }
+        setLoading(false);
         return;
       }
 
@@ -34,108 +32,81 @@ const MyHackathons = () => {
         setLoading(true);
         const token = localStorage.getItem('token');
         
-        // Using the admin endpoint to get events created by the current user
-        // Add validation to ensure we're not sending 'undefined'
-        const userId = currentUser.id;
-        if (!userId) {
-          setError('User ID not found. Please try logging in again.');
-          setLoading(false);
+        if (!token) {
+          navigate('/authentication');
           return;
         }
-        
+
+        // Fetch events created by the current user
         const response = await axios.get(
-          `http://localhost:5000/api/events?createdBy=${userId}`,
+          `http://localhost:5000/api/events?createdBy=${currentUser.id}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        
+
         setEvents(response.data);
-        setLoading(false);
       } catch (err) {
-        console.error('Error fetching user events:', err);
-        setError('Failed to load your hackathons. Please try again.');
-        setLoading(false);
-        
+        console.error('Error fetching created events:', err);
+        setError('Failed to load your created hackathons');
         if (showError) {
-          showError('Failed to load your hackathons');
+          showError('Error loading your created hackathons');
         }
+      } finally {
+        setLoading(false);
       }
     };
 
-    // Only fetch events if we have a valid user
-    if (currentUser && currentUser.id) {
-      fetchUserEvents();
-    } else if (!loading) {
-      // If not loading and no currentUser, redirect to login
-      navigate('/authentication');
-    }
-  }, [currentUser, navigate, showError, loading]);
+    fetchUserEvents();
+  }, [currentUser, navigate, showError]);
 
-  // Handle opening the delete confirmation modal
-  const handleOpenDeleteModal = (event) => {
+  // Handle event deletion
+  const handleDeleteClick = (event) => {
     setSelectedEvent(event);
     setShowDeleteModal(true);
   };
 
-  // Handle closing the delete confirmation modal
-  const handleCloseDeleteModal = () => {
-    setShowDeleteModal(false);
-    setSelectedEvent(null);
-  };
-
-  // Handle deleting an event
-  const handleDeleteEvent = async () => {
+  const handleDeleteConfirm = async () => {
     if (!selectedEvent) return;
 
     try {
       setDeleting(true);
       const token = localStorage.getItem('token');
       
-      const response = await axios.delete(
+      await axios.delete(
         `http://localhost:5000/api/events/${selectedEvent._id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
-      // Remove the deleted event from the state
+
+      // Remove the deleted event from state
       setEvents(events.filter(event => event._id !== selectedEvent._id));
-      
-      setDeleting(false);
-      setShowDeleteModal(false);
-      setSelectedEvent(null);
       
       if (showSuccess) {
         showSuccess('Hackathon deleted successfully');
       }
+      
+      setShowDeleteModal(false);
     } catch (err) {
       console.error('Error deleting event:', err);
-      setDeleting(false);
-      
-      // Display more specific error message if available
-      const errorMessage = err.response?.data?.message || 'Failed to delete hackathon';
-      
       if (showError) {
-        showError(errorMessage);
+        showError('Failed to delete hackathon');
       }
-      
-      // Close the modal even if there's an error
-      setShowDeleteModal(false);
-      setSelectedEvent(null);
+    } finally {
+      setDeleting(false);
     }
   };
 
-  // Get formatted date
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('en-US', options);
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setSelectedEvent(null);
   };
 
-  // Navigate to edit event page
-  const navigateToEditEvent = (eventId) => {
+  // Handle event creation
+  const handleCreateEvent = () => {
+    navigate('/create-event');
+  };
+
+  // Handle editing an event
+  const handleEditEvent = (eventId) => {
     navigate(`/edit-event/${eventId}`);
-  };
-
-  // Navigate to view registrations page
-  const navigateToRegistrations = (eventId) => {
-    navigate(`/event-registrations/${eventId}`);
   };
 
   return (
@@ -143,14 +114,14 @@ const MyHackathons = () => {
       <Navbar />
       <div className="my-hackathons-container">
         <div className="my-hackathons-header">
-          <h1>My Hackathons</h1>
+          <h1>My Hosted Hackathons</h1>
           <p>Manage the hackathons you've created</p>
-          
-          <div className="my-hackathons-actions">
-            <Link to="/add-event" className="create-event-btn">
-              + Create New Hackathon
-            </Link>
-          </div>
+          <button 
+            className="create-hackathon-button"
+            onClick={handleCreateEvent}
+          >
+            <i className="fas fa-plus"></i> Create New Hackathon
+          </button>
         </div>
 
         {loading ? (
@@ -161,104 +132,99 @@ const MyHackathons = () => {
         ) : error ? (
           <div className="error-container">
             <p>{error}</p>
-            <button onClick={() => window.location.reload()}>Try Again</button>
+            <button onClick={() => setLoading(true)}>Try Again</button>
           </div>
         ) : events.length > 0 ? (
-          <div className="my-hackathons-grid">
-            {events.map((event) => (
-              <div key={event._id} className="my-hackathon-card">
-                <div className="my-hackathon-image">
-                  <img 
-                    src={event.img.startsWith('http') ? event.img : `http://localhost:5000${event.img}`} 
-                    alt={event.title} 
-                  />
-                  <div className="my-hackathon-status">
-                    {new Date(event.date) > new Date() ? 'Upcoming' : 'Past'}
+          <div className="hackathons-grid">
+            {events.map(event => {
+              const imgUrl = event.img && typeof event.img === 'string' 
+                ? (event.img.startsWith('http') ? event.img : `http://localhost:5000${event.img}`)
+                : 'https://via.placeholder.com/300x200?text=Hackathon';
+                
+              const eventDate = event.date 
+                ? new Date(event.date).toLocaleDateString('en-US', {
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric'
+                  })
+                : "Upcoming";
+                
+              return (
+                <div className="hackathon-card" key={event._id}>
+                  <div className="hackathon-image">
+                    <img src={imgUrl} alt={event.title} />
+                  </div>
+                  <div className="hackathon-content">
+                    <h3>{event.title}</h3>
+                    <p className="hackathon-date">{eventDate}</p>
+                    <p className="hackathon-location">
+                      <i className="fas fa-map-marker-alt"></i> {event.location || "Virtual"}
+                    </p>
+                    <p className="hackathon-participants">
+                      <i className="fas fa-users"></i> {event.registeredCount || 0} registered
+                    </p>
+                  </div>
+                  <div className="hackathon-actions">
+                    <button 
+                      className="view-button"
+                      onClick={() => navigate(`/events/${event._id}`)}
+                    >
+                      <i className="fas fa-eye"></i> View
+                    </button>
+                    <button 
+                      className="edit-button"
+                      onClick={() => handleEditEvent(event._id)}
+                    >
+                      <i className="fas fa-edit"></i> Edit
+                    </button>
+                    <button 
+                      className="delete-button"
+                      onClick={() => handleDeleteClick(event)}
+                    >
+                      <i className="fas fa-trash"></i> Delete
+                    </button>
                   </div>
                 </div>
-                
-                <div className="my-hackathon-content">
-                  <h3>{event.title}</h3>
-                  <p className="my-hackathon-date">
-                    <i className="far fa-calendar-alt"></i> {formatDate(event.date)}
-                  </p>
-                  <p className="my-hackathon-location">
-                    <i className="fas fa-map-marker-alt"></i> {event.location}
-                  </p>
-                  <div className="my-hackathon-stats">
-                    <div className="my-hackathon-stat">
-                      <span className="stat-value">{event.registeredCount || 0}</span>
-                      <span className="stat-label">Registered</span>
-                    </div>
-                    <div className="my-hackathon-stat">
-                      <span className="stat-value">₹{event.price}</span>
-                      <span className="stat-label">Price</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="my-hackathon-actions">
-                  <Link to={`/event/${event._id}`} className="action-btn view-btn">
-                    <i className="fas fa-eye"></i> View
-                  </Link>
-                  <button 
-                    className="action-btn edit-btn"
-                    onClick={() => navigateToEditEvent(event._id)}
-                  >
-                    <i className="fas fa-edit"></i> Edit
-                  </button>
-                  <button 
-                    className="action-btn registrations-btn"
-                    onClick={() => navigateToRegistrations(event._id)}
-                  >
-                    <i className="fas fa-users"></i> Registrations
-                  </button>
-                  <button 
-                    className="action-btn delete-btn"
-                    onClick={() => handleOpenDeleteModal(event)}
-                  >
-                    <i className="fas fa-trash"></i> Delete
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="no-hackathons">
-            <div className="no-hackathons-content">
-              <i className="fas fa-calendar-times"></i>
-              <h2>No Hackathons Created Yet</h2>
-              <p>You haven't created any hackathons yet. Click the button below to create your first hackathon!</p>
-              <Link to="/add-event" className="create-first-event-btn">
-                Create Your First Hackathon
-              </Link>
-            </div>
+            <i className="fas fa-calendar-alt"></i>
+            <h3>No hackathons created</h3>
+            <p>You haven't created any hackathons yet.</p>
+            <button 
+              className="create-first-button"
+              onClick={handleCreateEvent}
+            >
+              Create Your First Hackathon
+            </button>
           </div>
         )}
       </div>
 
       {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <div className="delete-modal-overlay">
+      {showDeleteModal && selectedEvent && (
+        <div className="modal-overlay">
           <div className="delete-modal">
-            <h2>Confirm Deletion</h2>
-            <p>Are you sure you want to delete the hackathon <strong>{selectedEvent?.title}</strong>?</p>
-            <p className="warning-text">This action cannot be undone. All registrations for this hackathon will be deleted.</p>
+            <h2>Delete Hackathon</h2>
+            <p>Are you sure you want to delete "{selectedEvent.title}"?</p>
+            <p className="warning">This action cannot be undone.</p>
             
-            <div className="delete-modal-actions">
+            <div className="modal-actions">
               <button 
-                className="cancel-btn"
-                onClick={handleCloseDeleteModal}
+                className="cancel-button"
+                onClick={handleDeleteCancel}
                 disabled={deleting}
               >
                 Cancel
               </button>
               <button 
-                className="delete-btn"
-                onClick={handleDeleteEvent}
+                className="delete-confirm-button"
+                onClick={handleDeleteConfirm}
                 disabled={deleting}
               >
-                {deleting ? 'Deleting...' : 'Delete Hackathon'}
+                {deleting ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>

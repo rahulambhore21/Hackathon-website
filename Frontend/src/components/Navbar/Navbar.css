@@ -136,6 +136,11 @@
 .mobile-theme-toggle svg {
   margin-right: 10px;
   font-size: 20px;
+  transition: transform 0.3s ease;
+}
+
+.mobile-theme-toggle:hover svg {
+  transform: rotate(30deg);
 }
 
 /* Enhance existing styles */
@@ -174,6 +179,23 @@
   display: flex;
   flex-direction: row;
   gap: 1.8rem;
+}
+
+/* Responsive adjustments for navbar links */
+@media screen and (max-width: 1200px) {
+  .navbar-links_container {
+    gap: 1.2rem;
+  }
+}
+
+@media screen and (max-width: 1050px) {
+  .navbar-links_container {
+    gap: 1rem;
+  }
+  
+  .navbar-links_container p {
+    font-size: 14px;
+  }
 }
 
 .navbar-links_container a {
@@ -326,6 +348,8 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
   animation: fadeIn 0.3s ease-in-out;
   backdrop-filter: blur(10px);
+  overflow-y: auto;
+  max-height: 80vh;
 }
 
 .light-theme .navbar-menu_container {
@@ -407,13 +431,40 @@
   top: 110%;
   background: rgba(10, 10, 10, 0.95);
   min-width: 220px;
+  max-height: 80vh; /* Limit height and enable scrolling */
+  overflow-y: auto;
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   z-index: 10;
-  overflow: hidden;
-  animation: fadeInUp 0.3s ease;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.07);
+  transform-origin: top right;
+  animation: fadeInDropdown 0.25s ease forwards;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 72, 32, 0.5) rgba(0, 0, 0, 0.2);
+}
+
+/* Custom scrollbar styling */
+.navbar-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.navbar-dropdown::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+.navbar-dropdown::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 72, 32, 0.5);
+  border-radius: 10px;
+}
+
+.light-theme .navbar-dropdown::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.light-theme .navbar-dropdown::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 72, 32, 0.3);
 }
 
 @keyframes fadeInUp {
@@ -424,6 +475,17 @@
   to { 
     opacity: 1; 
     transform: translateY(0); 
+  }
+}
+
+@keyframes fadeInDropdown {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px) scale(0.95);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -447,6 +509,9 @@
   text-align: left;
   position: relative;
   border-left: 0px solid #FF4820;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .light-theme .navbar-dropdown p {
@@ -476,11 +541,16 @@
 
 .mobile-user-menu {
   width: 100%;
+  overflow-y: auto;
+  max-height: 50vh; /* For very small screens with many menu items */
 }
 
 .mobile-user-menu p {
   padding: 12px 5px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .light-theme .mobile-user-menu p {
@@ -508,32 +578,74 @@
   .navbar-menu {
     display: flex;
   }
+  
+  .navbar {
+    padding: 0.5rem 1.5rem;
+  }
 }
 
 @media screen and (max-width: 768px) {
   .navbar {
-    padding: 1rem 1.5rem;
+    padding: 0.8rem 1.2rem;
+  }
+  
+  .navbar-links_logo {
+    margin-right: 1rem;
+  }
+
+  .navbar {
+    padding: 0.8rem 1.2rem;
   }
 
   .navbar-menu_container {
-    width: 100vw;
-    height: 100vh;
-    right: -1.5rem;
-    top: 40px;
+    position: fixed;
+    width: 100%;
+    height: calc(100vh - 65px);
+    top: 65px;
+    right: 0;
+    left: 0;
+    bottom: 0;
     border-radius: 0;
-    padding: 2rem 1.5rem;
+    padding: 1.5rem;
     overflow-y: auto;
+    z-index: 2000;
+    margin-top: 0;
+    overscroll-behavior: contain; /* Prevent scroll chaining */
+    padding-bottom: 30px; /* Extra padding at bottom for better scrolling */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 72, 32, 0.5) rgba(0, 0, 0, 0.2);
+    display: block; /* Change to block for proper scrolling */
+  }
+
+  .navbar-menu_container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .navbar-menu_container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .navbar-menu_container::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 72, 32, 0.5);
+    border-radius: 10px;
+  }
+
+  .light-theme .navbar-menu_container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  .light-theme .navbar-menu_container::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 72, 32, 0.3);
   }
 
   .navbar-menu_container-links {
-    display: flex;
-    flex-direction: column;
+    display: block; /* Change to block for proper scrolling */
     width: 100%;
-    height: auto;
   }
 
   .navbar-menu_container-links p {
-    font-size: 20px;
+    font-size: 18px;
     padding: 1rem 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
@@ -541,11 +653,25 @@
   .light-theme .navbar-menu_container-links p {
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   }
+  
+  .navbar-dropdown {
+    right: -50px;
+  }
+
+  /* Prevent body scrolling when menu is open */
+  body.menu-open {
+    overflow: hidden;
+  }
 }
 
 @media screen and (max-width: 550px) {
   .navbar {
     padding: 0.7rem 1rem;
+    height: 70px;
+  }
+  
+  .navbar.navbar-scrolled {
+    height: 60px;
   }
 
   .navbar-sign {
@@ -569,6 +695,27 @@
   .user-name {
     display: none;
   }
+  
+  .navbar-menu_container {
+    top: 70px;
+    height: calc(100vh - 70px);
+    padding: 1rem;
+  }
+  
+  .navbar.navbar-scrolled .navbar-menu_container {
+    top: 60px;
+    height: calc(100vh - 60px);
+  }
+  
+  /* Mobile menu needs more spacing for better touch targets */
+  .navbar-menu_container-links p {
+    padding: 0.8rem 0;
+    font-size: 17px;
+  }
+  
+  .mobile-user-menu p {
+    padding: 0.8rem 5px;
+  }
 }
 
 @media screen and (min-width: 551px) and (max-width: 768px) {
@@ -589,6 +736,16 @@
   vertical-align: middle;
 }
 
+.light-theme .loading-spinner-small {
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-top: 2px solid #333;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .navbar-loading {
   display: flex;
   align-items: center;
@@ -596,9 +753,70 @@
   font-size: 14px;
 }
 
+.light-theme .navbar-loading {
+  color: #333;
+}
+
 .mobile-loading {
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 10px 0;
+  color: #fff;
+}
+
+.light-theme .mobile-loading {
+  color: #333;
+}
+
+/* Enhanced accessibility */
+.navbar-user:focus, 
+.theme-toggle:focus,
+.navbar-links_logo:focus,
+.menu-icon:focus {
+  outline: 2px solid #FF4820;
+  outline-offset: 2px;
+}
+
+/* Fix mobile menu items overflow */
+.navbar-menu_container-links p,
+.mobile-user-menu p {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Enhance accessibility for touch targets */
+@media (hover: none) {
+  .navbar-menu_container-links p,
+  .mobile-user-menu p {
+    padding: 12px 5px; /* Larger touch targets on touch devices */
+  }
+  
+  .navbar-dropdown p {
+    padding: 16px 20px;
+  }
+}
+
+/* Add fade effect for scrollable containers */
+.navbar-menu_container::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.navbar-menu_container.scrollable::after {
+  opacity: 1;
+}
+
+.light-theme .navbar-menu_container::after {
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.7), transparent);
 }

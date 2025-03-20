@@ -1,46 +1,43 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './EventCard.css';
 
-const EventCard = ({ id, title, description, img, date = "Upcoming", location = "Virtual" }) => {
-  // Add error handling for image loading
-  const handleImageError = (e) => {
-    e.target.src = 'https://via.placeholder.com/300x150?text=No+Image';
+const EventCard = ({ id, title, description, img, date, location, onClick }) => {
+  const navigate = useNavigate();
+  
+  // Handle card click, either use the provided onClick or navigate to event details
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      navigate(`/events/${id}`);
+    }
   };
   
-  // Truncate description to a reasonable length
+  // Truncate description if it's too long
   const truncateDescription = (text, maxLength = 100) => {
     if (!text) return '';
-    return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+    if (text.length <= maxLength) return text;
+    return text.slice(0, maxLength) + '...';
   };
 
-  // For debugging
-  console.log("EventCard props:", { id, title, description, img, date });
-
   return (
-    <Link to={`/event/${id}`} className="event-card-link">
-      <div className="event-card">
-        <div className="card-image-container">
-          <img 
-            src={img || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1000'} 
-            alt={title || "Event"} 
-            className="card-image" 
-            onError={handleImageError}
-          />
-          <div className="event-badge">{date}</div>
-        </div>
-        
-        <div className="card-content">
-          <h3 className="card-title">{title || "Event Title"}</h3>
-          <div className="location-tag">
-            <span>{location}</span>
+    <div className="event-card" onClick={handleClick}>
+      <div className="event-card-img">
+        <img src={img || 'https://via.placeholder.com/300x200?text=Hackathon'} alt={title} />
+        <div className="event-date-badge">{date}</div>
+      </div>
+      <div className="event-card-content">
+        <h3 className="event-card-title">{title}</h3>
+        <p className="event-card-description">{truncateDescription(description)}</p>
+        <div className="event-card-footer">
+          <div className="event-location">
+            <i className="fas fa-map-marker-alt"></i> {location}
           </div>
-          <p className="card-description">
-            {truncateDescription(description) || "Join us for this amazing event that will feature great speakers, networking opportunities, and much more!"}
-          </p>
+          <button className="event-details-btn">View Details</button>
         </div>
       </div>
-    </Link>
+    </div>
   );
 };
 

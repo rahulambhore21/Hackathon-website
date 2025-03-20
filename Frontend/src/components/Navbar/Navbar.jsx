@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { RiMenu3Line, RiCloseLine, RiMoonLine, RiSunLine, RiUser3Line, RiSettings5Line, RiLogoutCircleRLine, RiDashboardLine } from 'react-icons/ri';
 import { NavLink, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-// Remove the problematic import temporarily
-// import { useNotification } from '../../context/NotificationContext';
+import { useNotification } from '../../context/NotificationContext';
 import logo from '../../assets/logo.jpg';
 import './Navbar.css';
 
@@ -12,14 +11,15 @@ const Navbar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(true);
+  const [isMenuScrollable, setIsMenuScrollable] = useState(false);
   
-  const { currentUser, logout, loading, authInitialized } = useAuth();
-  // Remove problematic destructuring
-  // const { showSuccess } = useNotification();
+  const { currentUser, logout, loading, authInitialized } = useAuth() || {};
+  const { showSuccess } = useNotification() || {};
   const navigate = useNavigate();
   const location = useLocation();
   const dropdownRef = useRef(null);
   const menuRef = useRef(null);
+  const menuContentRef = useRef(null);
 
   // Handle scroll effect with improved threshold
   useEffect(() => {
@@ -30,6 +30,19 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Toggle body scroll when menu is open/closed
+  useEffect(() => {
+    if (toggleMenu) {
+      document.body.classList.add('menu-open');
+    } else {
+      document.body.classList.remove('menu-open');
+    }
+    
+    return () => {
+      document.body.classList.remove('menu-open');
+    };
+  }, [toggleMenu]);
 
   // Close dropdown when clicking outside with useRef hook
   useEffect(() => {
@@ -78,8 +91,12 @@ const Navbar = () => {
   const handleLogout = () => {
     logout();
     setShowDropdown(false);
-    // Use navigate('/') for more predictable behavior on logout
     navigate('/');
+    
+    // Use showSuccess if available
+    if (typeof showSuccess === 'function') {
+      showSuccess('Logged out successfully');
+    }
   };
 
   // Get initials from name
@@ -93,6 +110,23 @@ const Navbar = () => {
       .slice(0, 2);
   };
 
+  // Check if mobile menu content is scrollable
+  useEffect(() => {
+    if (toggleMenu && menuContentRef.current) {
+      const checkScrollable = () => {
+        const element = menuContentRef.current;
+        setIsMenuScrollable(element.scrollHeight > element.clientHeight);
+      };
+      
+      checkScrollable();
+      window.addEventListener('resize', checkScrollable);
+      
+      return () => {
+        window.removeEventListener('resize', checkScrollable);
+      };
+    }
+  }, [toggleMenu]);
+
   return (
     <div className={`navbar ${scrolled ? 'navbar-scrolled' : ''} ${isDarkTheme ? 'dark-theme' : 'light-theme'}`}>
       <div className="navbar-links">
@@ -104,11 +138,11 @@ const Navbar = () => {
             <p>Home</p>
           </NavLink>
           <NavLink to="/events" className={({isActive}) => isActive ? "active-link" : ""}>
-            <p>Categories</p>
+            <p>Hackathons</p>
           </NavLink>
-          <NavLink to="/upcoming" className={({isActive}) => isActive ? "active-link" : ""}>
+          {/* <NavLink to="/upcoming" className={({isActive}) => isActive ? "active-link" : ""}>
             <p>Upcoming Hackathons</p>
-          </NavLink>
+          </NavLink> */}
           <NavLink to="/blogs" className={({isActive}) => isActive ? "active-link" : ""}>
             <p>Blog</p>
           </NavLink>
@@ -143,11 +177,9 @@ const Navbar = () => {
                   <Link to="/profile" onClick={() => setShowDropdown(false)}>
                     <p><RiUser3Line style={{marginRight: '10px', verticalAlign: 'middle'}} /> Profile</p>
                   </Link>
-                  {currentUser.role === 'admin' && (
-                    <Link to="/my-hackathons" onClick={() => setShowDropdown(false)}>
-                      <p><RiDashboardLine style={{marginRight: '10px', verticalAlign: 'middle'}} /> My Hackathons</p>
-                    </Link>
-                  )}
+                  <Link to="/my-hackathons" onClick={() => setShowDropdown(false)}>
+                    <p><RiDashboardLine style={{marginRight: '10px', verticalAlign: 'middle'}} /> My Hackathons</p>
+                  </Link>
                   <Link to="/settings" onClick={() => setShowDropdown(false)}>
                     <p><RiSettings5Line style={{marginRight: '10px', verticalAlign: 'middle'}} /> Settings</p>
                   </Link>
@@ -169,14 +201,16 @@ const Navbar = () => {
             ? <RiCloseLine className="menu-icon" onClick={() => setToggleMenu(false)} />
             : <RiMenu3Line className="menu-icon" onClick={() => setToggleMenu(true)} />}
           {toggleMenu && (
-          <div className="navbar-menu_container scale-up-center" ref={menuRef}>
-            <div className="navbar-menu_container-links">
-              <p onClick={() => handleNavigate('/')}>Home</p>
-              <p onClick={() => handleNavigate('/upcoming')}>Upcoming Hackathons</p>
-              <p onClick={() => handleNavigate('/discover')}>Discover</p>
-              <p onClick={() => handleNavigate('/categories')}>Categories</p>
-              <p onClick={() => handleNavigate('/blog')}>Blog</p>
-            </div>
+          <div 
+            className={`navbar-menu_container scale-up-center ${isMenuScrollable ? 'scrollable' : ''}`} 
+            ref={menuRef}
+          >
+            {/* Removed extra wrapping div around menu items for better scrolling */}
+            <p onClick={() => handleNavigate('/')}>Home</p>
+            <p onClick={() => handleNavigate('/events')}>Hackathons</p>
+            <p onClick={() => handleNavigate('/blogs')}>Blog</p>
+            
+            {/* This section is only shown on mobile */}
             <div className="navbar-menu_container-links-sign">
               {(!authInitialized || loading) ? (
                 <div className="mobile-loading">

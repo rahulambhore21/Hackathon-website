@@ -1,0 +1,329 @@
+.preferences-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: linear-gradient(135deg, #191919, #111111);
+}
+
+.preferences-card {
+  width: 100%;
+  max-width: 800px;
+  background: #222;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.preferences-progress {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.preferences-progress::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background: #444;
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+.progress-step {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #333;
+  color: #888;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin: 0 10px;
+  z-index: 1;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.progress-step.active {
+  background: linear-gradient(135deg, #FF4820, #FF7750);
+  color: white;
+  box-shadow: 0 3px 10px rgba(255, 72, 32, 0.3);
+}
+
+.preferences-step {
+  margin-bottom: 1.5rem;
+}
+
+.preferences-step h2 {
+  margin-bottom: 1.5rem;
+  color: #fff;
+  font-size: 1.8rem;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #ddd;
+  font-size: 1rem;
+}
+
+.form-hint {
+  color: #888;
+  font-size: 0.875rem;
+  margin: 0.25rem 0 0.75rem;
+}
+
+.specialty-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-top: 0.5rem;
+}
+
+.specialty-option {
+  padding: 12px;
+  border: 1px solid #444;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #333;
+  color: #ddd;
+  text-align: center;
+}
+
+.specialty-option:hover {
+  background: #3a3a3a;
+  transform: translateY(-2px);
+}
+
+.specialty-option.selected {
+  background: rgba(255, 72, 32, 0.15);
+  border-color: #FF4820;
+  color: #FF4820;
+  font-weight: 600;
+}
+
+.interests-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 0.5rem;
+}
+
+.interest-tag {
+  padding: 8px 16px;
+  border-radius: 50px;
+  background: #333;
+  color: #ddd;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.interest-tag:hover {
+  background: #3a3a3a;
+  transform: translateY(-2px);
+}
+
+.interest-tag.selected {
+  background: rgba(255, 72, 32, 0.15);
+  color: #FF4820;
+  border: 1px solid #FF4820;
+  font-weight: 600;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 12px 24px;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, #FF4820, #FF7750);
+  color: white;
+  box-shadow: 0 4px 15px rgba(255, 72, 32, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 20px rgba(255, 72, 32, 0.4);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #ddd;
+  border: 1px solid #444;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+input[type="text"],
+select {
+  width: 100%;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background: #333;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+input[type="text"]:focus,
+select:focus {
+  border-color: #FF4820;
+  box-shadow: 0 0 0 2px rgba(255, 72, 32, 0.2);
+}
+
+.radio-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 0.5rem;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #333;
+  color: #ddd;
+  transition: background 0.2s ease;
+}
+
+.radio-option:hover {
+  background: #3a3a3a;
+}
+
+.radio-option input[type="radio"] {
+  margin-right: 8px;
+  accent-color: #FF4820;
+}
+
+.date-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.date-inputs select {
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  .preferences-card {
+    padding: 1.5rem;
+  }
+  
+  .specialty-options {
+    grid-template-columns: 1fr;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    padding: 10px 16px;
+    font-size: 0.875rem;
+  }
+  
+  .radio-option {
+    width: 100%;
+  }
+  
+  .date-inputs {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Light theme overrides */
+:global(.light-theme) .preferences-container {
+  background: linear-gradient(135deg, #f5f5f5, #e5e5e5);
+}
+
+:global(.light-theme) .preferences-card {
+  background: #fff;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+:global(.light-theme) .preferences-progress::before {
+  background: #ddd;
+}
+
+:global(.light-theme) .progress-step {
+  background: #eee;
+  color: #888;
+}
+
+:global(.light-theme) .preferences-step h2 {
+  color: #333;
+}
+
+:global(.light-theme) .form-group label {
+  color: #444;
+}
+
+:global(.light-theme) .specialty-option,
+:global(.light-theme) .interest-tag {
+  background: #f5f5f5;
+  border-color: #ddd;
+  color: #555;
+}
+
+:global(.light-theme) .specialty-option:hover,
+:global(.light-theme) .interest-tag:hover {
+  background: #eee;
+}
+
+:global(.light-theme) .btn-secondary {
+  border-color: #ddd;
+  color: #555;
+}
+
+:global(.light-theme) input[type="text"],
+:global(.light-theme) select {
+  background: #f5f5f5;
+  border-color: #ddd;
+  color: #333;
+}
+
+:global(.light-theme) .radio-option {
+  background: #f5f5f5;
+  color: #555;
+}
+
+:global(.light-theme) .radio-option:hover {
+  background: #eee;
+}

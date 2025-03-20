@@ -35,6 +35,58 @@ const upload = multer({
   } 
 });
 
+// Helper function to process and validate sponsor data
+const processSponsors = (sponsorsData) => {
+  if (!sponsorsData) return [];
+  
+  try {
+    // Handle string (JSON) input
+    if (typeof sponsorsData === 'string') {
+      const parsedSponsors = JSON.parse(sponsorsData);
+      
+      // Handle array of strings (old format)
+      if (Array.isArray(parsedSponsors) && parsedSponsors.every(s => typeof s === 'string')) {
+        return parsedSponsors.map(name => ({ name, level: 'Gold' }));
+      }
+      
+      // Handle array of objects (new format)
+      if (Array.isArray(parsedSponsors) && parsedSponsors.every(s => typeof s === 'object')) {
+        return parsedSponsors.map(sponsor => ({
+          name: sponsor.name || 'Unknown Sponsor',
+          level: sponsor.level || 'Gold',
+          website: sponsor.website || '',
+          logoUrl: sponsor.logoUrl || ''
+        }));
+      }
+    }
+    
+    // Handle array input directly
+    if (Array.isArray(sponsorsData)) {
+      // Array of strings (old format)
+      if (sponsorsData.every(s => typeof s === 'string')) {
+        return sponsorsData.map(name => ({ name, level: 'Gold' }));
+      }
+      
+      // Array of objects (new format)
+      if (sponsorsData.every(s => typeof s === 'object')) {
+        return sponsorsData.map(sponsor => ({
+          name: sponsor.name || 'Unknown Sponsor',
+          level: sponsor.level || 'Gold',
+          website: sponsor.website || '',
+          logoUrl: sponsor.logoUrl || ''
+        }));
+      }
+    }
+    
+    // Default case - unexpected format
+    console.error('Unexpected sponsor data format:', sponsorsData);
+    return [];
+  } catch (err) {
+    console.error('Error processing sponsors:', err);
+    return [];
+  }
+};
+
 // Create Event (Admin Only)
 router.post('/', auth, adminOnly, upload.single('img'), async (req, res) => {
   try {
@@ -46,8 +98,10 @@ router.post('/', auth, adminOnly, upload.single('img'), async (req, res) => {
 
     // Parse JSON strings if they're passed as strings
     const parsedPrizes = typeof prizes === 'string' ? JSON.parse(prizes) : prizes;
-    const parsedSponsors = typeof sponsors === 'string' ? JSON.parse(sponsors) : sponsors;
     const parsedFaqs = typeof faqs === 'string' ? JSON.parse(faqs) : faqs;
+    
+    // Process sponsors with the helper function
+    const processedSponsors = processSponsors(sponsors);
     
     const event = new Event({ 
       title, 
@@ -62,7 +116,7 @@ router.post('/', auth, adminOnly, upload.single('img'), async (req, res) => {
       maxTeamSize: Number(maxTeamSize) || 4,
       format,
       prizes: parsedPrizes,
-      sponsors: parsedSponsors,
+      sponsors: processedSponsors,
       faqs: parsedFaqs,
       createdBy: req.user.id,
       img: req.file ? `/uploads/events/${req.file.filename}` : ''
@@ -247,7 +301,6 @@ router.put('/:id', auth, adminOnly, upload.single('img'), async (req, res) => {
     
     // Parse JSON strings if they're passed as strings
     const parsedPrizes = typeof prizes === 'string' ? JSON.parse(prizes) : prizes;
-    const parsedSponsors = typeof sponsors === 'string' ? JSON.parse(sponsors) : sponsors;
     const parsedFaqs = typeof faqs === 'string' ? JSON.parse(faqs) : faqs;
 
     const event = await Event.findById(req.params.id);
@@ -266,7 +319,7 @@ router.put('/:id', auth, adminOnly, upload.single('img'), async (req, res) => {
     event.maxTeamSize = maxTeamSize ? Number(maxTeamSize) : event.maxTeamSize;
     event.format = format || event.format;
     event.prizes = parsedPrizes || event.prizes;
-    event.sponsors = parsedSponsors || event.sponsors;
+    event.sponsors = processSponsors(sponsors) || event.sponsors;
     event.faqs = parsedFaqs || event.faqs;
     
     // Update image if a new one is uploaded

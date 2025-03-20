@@ -1,259 +1,325 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // Add axios import
-import './AddEvent.css';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import axios from 'axios';
 import Navbar from '../../components/Navbar/Navbar';
-import { useAuth } from '../../context/AuthContext'; // Import the auth context
+import { useAuth } from '../../context/AuthContext';
+import { useNotification } from '../../context/NotificationContext';
+import './AddEvent.css';
 
 const AddEvent = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAuth() || {}; // Get the current user from context
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
-  const [previewImage, setPreviewImage] = useState(null);
+  const { id } = useParams(); // Get event ID if editing
+  const { currentUser } = useAuth() || {};
+  const { showSuccess, showError } = useNotification() || {};
   
-  // State for the form fields
+  // Form data state
   const [formData, setFormData] = useState({
     title: '',
-    description: '',
+    organizerName: '',
+    organizerEmail: '',
+    organizerPhone: '',
+    websiteUrl: '',
+    eventType: 'in-person',
     date: '',
-    time: '',
+    startTime: '',
+    endDate: '',
+    endTime: '',
+    timezone: 'UTC',
     location: '',
-    category: '',
-    price: '',
-    registrationDeadline: '',
+    venueName: '',
+    venueAddress: '',
+    city: '',
+    state: '',
+    country: '',
+    virtualPlatform: '',
+    virtualLink: '',
+    tagline: '',
+    description: '',
+    tracks: [{ name: '', description: '' }],
+    rules: '',
+    prizes: [{ position: '', prize: '' }],
     eligibility: '',
-    img: '',
+    ageRestrictions: '',
+    geographicRestrictions: '',
+    skillLevel: 'all',
+    minTeamSize: 1,
     maxTeamSize: 4,
-    prizes: [
-      { position: '1st Place', prize: '' },
-      { position: '2nd Place', prize: '' },
-      { position: '3rd Place', prize: '' }
-    ],
-    format: '',
-    sponsors: [''],
-    faqs: [
-      { question: '', answer: '' }
-    ]
+    price: 0,
+    registrationDeadline: '',
+    accommodation: false,
+    accommodationDetails: '',
+    travelReimbursement: false,
+    travelReimbursementDetails: '',
+    foodArrangements: '',
+    swagDetails: '',
+    sponsors: [{ name: '', level: 'Gold', website: '', logoUrl: '' }],
+    partnerOrganizations: '',
+    codeOfConduct: '',
+    termsAndConditions: '',
+    photoRelease: false,
+    faqs: [{ question: '', answer: '' }],
+    category: 'ai',
+    time: '',
   });
-
+  
+  const [previewImage, setPreviewImage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  
   // Categories for the dropdown
   const categories = [
-    'Artificial Intelligence',
-    'Blockchain',
-    'Web Development',
-    'Mobile App Development',
-    'IoT',
-    'Healthcare',
-    'Environment',
-    'Education',
-    'Cybersecurity',
-    'Gaming',
-    'Other'
+    { id: 'ai', name: 'AI & Machine Learning' },
+    { id: 'web', name: 'Web Development' },
+    { id: 'mobile', name: 'Mobile Development' },
+    { id: 'blockchain', name: 'Blockchain' },
+    { id: 'iot', name: 'IoT' },
+    { id: 'cloud', name: 'Cloud Computing' },
+    { id: 'security', name: 'Cybersecurity' },
+    { id: 'game', name: 'Game Development' },
+    { id: 'data', name: 'Data Science' },
+    { id: 'design', name: 'Design' },
+    { id: 'open', name: 'Open Innovation' }
   ];
-
-  // Handle form input changes
-  const handleChange = (e) => {
-    const { name, value, type } = e.target;
-    
-    // Handle number inputs
-    if (type === 'number') {
+  
+  // Load event data if editing
+  useEffect(() => {
+    if (id) {
+      setIsEditing(true);
+      fetchEventDetails();
+    }
+  }, [id]);
+  
+  // Fetch event details for editing
+  const fetchEventDetails = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/events/${id}`);
+      const event = response.data;
+      
+      // Format date for input field (YYYY-MM-DD)
+      const formattedDate = event.date ? new Date(event.date).toISOString().split('T')[0] : '';
+      const formattedDeadline = event.registrationDeadline ? 
+        new Date(event.registrationDeadline).toISOString().split('T')[0] : '';
+      
       setFormData({
-        ...formData,
-        [name]: value === '' ? '' : Number(value)
+        title: event.title || '',
+        description: event.description || '',
+        date: formattedDate,
+        time: event.time || '',
+        location: event.location || 'web',
+        category: event.category || 'web',
+        price: event.price || 0,
+        registrationDeadline: formattedDeadline,
+        eligibility: event.eligibility || '',
+        maxTeamSize: event.maxTeamSize || 4,
+        format: event.format || '',
+        prizes: event.prizes && event.prizes.length ? event.prizes : [{ position: '1st Place', prize: '' }],
+        sponsors: event.sponsors && event.sponsors.length ? event.sponsors : [''],
+        faqs: event.faqs && event.faqs.length ? event.faqs : [{ question: '', answer: '' }]
       });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value
-      });
+      
+      // Set preview image if it exists
+      if (event.img) {
+        const imgUrl = event.img.startsWith('http') ? 
+          event.img : `http://localhost:5000${event.img}`;
+        setPreviewImage(imgUrl);
+      }
+    } catch (err) {
+      console.error('Error fetching event details:', err);
+      showError('Failed to load event details');
     }
   };
+  
+  // Handle input changes
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+  
+  // Handle prize field changes
+  const handlePrizeChange = (index, field, value) => {
+    const updatedPrizes = [...formData.prizes];
+    updatedPrizes[index][field] = value;
+    setFormData(prev => ({
+      ...prev,
+      prizes: updatedPrizes
+    }));
+  };
+  
+  // Add more prize fields
+  const addPrizeField = () => {
+    setFormData(prev => ({
+      ...prev,
+      prizes: [...prev.prizes, { position: `${prev.prizes.length + 1}${getOrdinal(prev.prizes.length + 1)} Place`, prize: '' }]
+    }));
+  };
+  
+  // Remove prize field
+  const removePrizeField = (index) => {
+    if (formData.prizes.length > 1) {
+      const updatedPrizes = [...formData.prizes];
+      updatedPrizes.splice(index, 1);
+      setFormData(prev => ({
+        ...prev,
+        prizes: updatedPrizes
+      }));
+    }
+  };
+  
+  // Get ordinal suffix (1st, 2nd, 3rd, etc)
+  const getOrdinal = (n) => {
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return s[(v - 20) % 10] || s[v] || s[0];
+  };
+  
+  // Handle sponsor field changes
+  const handleSponsorChange = (index, field, value) => {
+    const updatedSponsors = [...formData.sponsors];
+    updatedSponsors[index][field] = value;
+    setFormData(prev => ({
+      ...prev,
+      sponsors: updatedSponsors
+    }));
+  };
+  
+  // Add more sponsor fields
+  const addSponsorField = () => {
+    setFormData(prev => ({
+      ...prev,
+      sponsors: [...prev.sponsors, { name: '', level: 'Gold', website: '', logoUrl: '' }]
+    }));
+  };
 
-  // Handle image upload
-  const handleImageChange = (e) => {
+  // Handle sponsor logo upload
+  const handleSponsorLogoUpload = (index, e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setError('Image size exceeds 5MB limit. Please choose a smaller image.');
-        e.target.value = null; // Clear the file input
-        setPreviewImage(null);
-        return;
-      }
-      
-      // Validate file type
-      const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
-      if (!validTypes.includes(file.type)) {
-        setError('Invalid file type. Please upload a JPG, PNG, or GIF image.');
-        e.target.value = null; // Clear the file input
-        setPreviewImage(null);
-        return;
-      }
-      
+      // Preview the image and set it to logoUrl
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const updatedSponsors = [...formData.sponsors];
+        updatedSponsors[index].logoUrl = reader.result;
+        setFormData(prev => ({
+          ...prev,
+          sponsors: updatedSponsors
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  // Remove sponsor field
+  const removeSponsorField = (index) => {
+    if (formData.sponsors.length > 1) {
+      const updatedSponsors = [...formData.sponsors];
+      updatedSponsors.splice(index, 1);
+      setFormData(prev => ({
+        ...prev,
+        sponsors: updatedSponsors
+      }));
+    }
+  };
+  
+  // Handle FAQ field changes
+  const handleFaqChange = (index, field, value) => {
+    const updatedFaqs = [...formData.faqs];
+    updatedFaqs[index][field] = value;
+    setFormData(prev => ({
+      ...prev,
+      faqs: updatedFaqs
+    }));
+  };
+  
+  // Add more FAQ fields
+  const addFaqField = () => {
+    setFormData(prev => ({
+      ...prev,
+      faqs: [...prev.faqs, { question: '', answer: '' }]
+    }));
+  };
+  
+  // Remove FAQ field
+  const removeFaqField = (index) => {
+    if (formData.faqs.length > 1) {
+      const updatedFaqs = [...formData.faqs];
+      updatedFaqs.splice(index, 1);
+      setFormData(prev => ({
+        ...prev,
+        faqs: updatedFaqs
+      }));
+    }
+  };
+  
+  // Handle image upload
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Preview the image
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImage(reader.result);
       };
       reader.readAsDataURL(file);
-    } else {
-      setPreviewImage(null);
     }
   };
-
-  // Handle prize changes
-  const handlePrizeChange = (index, field, value) => {
-    const updatedPrizes = [...formData.prizes];
-    updatedPrizes[index] = { 
-      ...updatedPrizes[index], 
-      [field]: value 
-    };
-    
-    setFormData({
-      ...formData,
-      prizes: updatedPrizes
-    });
-  };
-
-  // Add new prize field
-  const addPrize = () => {
-    setFormData({
-      ...formData,
-      prizes: [
-        ...formData.prizes,
-        { position: `Special Prize`, prize: '' }
-      ]
-    });
-  };
-
-  // Remove prize field
-  const removePrize = (index) => {
-    const updatedPrizes = [...formData.prizes];
-    updatedPrizes.splice(index, 1);
-    
-    setFormData({
-      ...formData,
-      prizes: updatedPrizes
-    });
-  };
-
-  // Handle sponsor changes
-  const handleSponsorChange = (index, value) => {
-    const updatedSponsors = [...formData.sponsors];
-    updatedSponsors[index] = value;
-    
-    setFormData({
-      ...formData,
-      sponsors: updatedSponsors
-    });
-  };
-
-  // Add new sponsor field
-  const addSponsor = () => {
-    setFormData({
-      ...formData,
-      sponsors: [...formData.sponsors, '']
-    });
-  };
-
-  // Remove sponsor field
-  const removeSponsor = (index) => {
-    const updatedSponsors = [...formData.sponsors];
-    updatedSponsors.splice(index, 1);
-    
-    setFormData({
-      ...formData,
-      sponsors: updatedSponsors
-    });
-  };
-
-  // Handle FAQ changes
-  const handleFaqChange = (index, field, value) => {
-    const updatedFaqs = [...formData.faqs];
-    updatedFaqs[index] = { 
-      ...updatedFaqs[index], 
-      [field]: value 
-    };
-    
-    setFormData({
-      ...formData,
-      faqs: updatedFaqs
-    });
-  };
-
-  // Add new FAQ field
-  const addFaq = () => {
-    setFormData({
-      ...formData,
-      faqs: [
-        ...formData.faqs,
-        { question: '', answer: '' }
-      ]
-    });
-  };
-
-  // Remove FAQ field
-  const removeFaq = (index) => {
-    const updatedFaqs = [...formData.faqs];
-    updatedFaqs.splice(index, 1);
-    
-    setFormData({
-      ...formData,
-      faqs: updatedFaqs
-    });
-  };
-
-  // Form validation
+  
+  // Validate form
   const validateForm = () => {
-    const requiredFields = [
-      'title', 'description', 'date', 'time', 'location', 
-      'category', 'price', 'registrationDeadline', 'eligibility'
-    ];
+    if (!formData.title) {
+      setError('Event title is required');
+      return false;
+    }
     
-    for (const field of requiredFields) {
-      if (!formData[field]) {
-        setError(`Please fill in the ${field.replace(/([A-Z])/g, ' $1').toLowerCase()} field.`);
+    if (!formData.description) {
+      setError('Event description is required');
+      return false;
+    }
+    
+    if (!formData.date) {
+      setError('Event date is required');
+      return false;
+    }
+    
+    if (!formData.time) {
+      setError('Event time is required');
+      return false;
+    }
+    
+    if (!formData.location) {
+      setError('Event location is required');
+      return false;
+    }
+    
+    if (!formData.registrationDeadline) {
+      setError('Registration deadline is required');
+      return false;
+    }
+    
+    if (!formData.eligibility) {
+      setError('Eligibility criteria is required');
+      return false;
+    }
+    
+    // Check if at least one prize has both position and value
+    if (formData.prizes.length > 0) {
+      const validPrizes = formData.prizes.filter(prize => 
+        prize.position.trim() !== '' && prize.prize.trim() !== ''
+      );
+      
+      if (validPrizes.length === 0) {
+        setError('Please add at least one valid prize');
         return false;
       }
     }
     
-    // Check if an image was uploaded
-    const fileInput = document.querySelector('#img');
-    if (!fileInput.files[0] && !previewImage) {
-      setError('Please upload an event image.');
-      return false;
-    }
-    
-    // Check if at least one prize is filled
-    if (formData.prizes.length === 0 || !formData.prizes[0].prize) {
-      setError('Please add at least one prize.');
-      return false;
-    }
-    
-    // Check if format is filled
-    if (!formData.format) {
-      setError('Please describe the event format.');
-      return false;
-    }
-    
-    // Validate that dates make sense
-    const today = new Date();
-    const eventDate = new Date(formData.date);
-    const registrationDeadline = new Date(formData.registrationDeadline);
-    
-    if (registrationDeadline < today) {
-      setError('Registration deadline cannot be in the past.');
-      return false;
-    }
-    
-    if (eventDate < today) {
-      setError('Event date cannot be in the past.');
-      return false;
-    }
-    
-    if (registrationDeadline > eventDate) {
-      setError('Registration deadline must be before the event date.');
+    // Check if we have an image for new events
+    if (!isEditing && !previewImage) {
+      setError('Event image is required');
       return false;
     }
     
@@ -296,15 +362,16 @@ const AddEvent = () => {
       eventData.append('format', formData.format);
       
       // Convert arrays to JSON strings before appending
+      eventData.append('faqs', JSON.stringify(formData.faqs));
+      eventData.append('tracks', JSON.stringify(formData.tracks));
       eventData.append('prizes', JSON.stringify(formData.prizes));
       eventData.append('sponsors', JSON.stringify(formData.sponsors));
-      eventData.append('faqs', JSON.stringify(formData.faqs));
       
       // Get the file from the input element
       const fileInput = document.querySelector('#img');
       if (fileInput.files.length > 0) {
         eventData.append('img', fileInput.files[0]);
-      } else if (previewImage) {
+      } else if (previewImage && !isEditing) {
         // If we have a preview but no file (unlikely scenario but just in case)
         // Convert base64 to blob and append
         const response = await fetch(previewImage);
@@ -312,34 +379,176 @@ const AddEvent = () => {
         eventData.append('img', blob, 'image.jpg');
       }
       
+      // Add sponsor logos if any
+      const sponsorLogosInput = document.querySelector('#sponsorLogos');
+      if (sponsorLogosInput && sponsorLogosInput.files.length > 0) {
+        Array.from(sponsorLogosInput.files).forEach((file, index) => {
+          eventData.append(`sponsorLogos[${index}]`, file);
+        });
+      }
+      
       // Get the token from localStorage
       const token = localStorage.getItem('token');
       
-      // Make the API call with the FormData
-      const response = await axios.post(
-        'http://localhost:5000/api/events', 
-        eventData,
-        { 
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          } 
-        }
-      );
+      let response;
       
-      setSuccess('Event created successfully!');
+      if (isEditing) {
+        // Update existing event
+        response = await axios.put(
+          `http://localhost:5000/api/events/${id}`,
+          eventData,
+          { 
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data'
+            } 
+          }
+        );
+        
+        setSuccess('Event updated successfully!');
+        if (showSuccess) showSuccess('Event updated successfully!');
+      } else {
+        // Create new event
+        response = await axios.post(
+          'http://localhost:5000/api/events', 
+          eventData,
+          { 
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data'
+            } 
+          }
+        );
+        
+        setSuccess('Event created successfully!');
+        if (showSuccess) showSuccess('Event created successfully!');
+      }
+      
       setIsSubmitting(false);
       
-      // Redirect to the new event page after success
+      // Redirect to the event page after success
       setTimeout(() => {
-        navigate(`/event/${response.data._id}`);
+        navigate(`/events/${response.data._id}`);
       }, 2000);
       
     } catch (err) {
-      console.error('Error creating event:', err);
-      const errorMessage = err.response?.data?.message || 'Failed to create event. Please try again.';
+      console.error('Error saving event:', err);
+      const errorMessage = err.response?.data?.message || 'Failed to save event. Please try again.';
       setError(errorMessage);
+      if (showError) showError(errorMessage);
       setIsSubmitting(false);
+    }
+  };
+
+  // Function to add a track
+  const addTrack = () => {
+    setFormData(prev => ({
+      ...prev,
+      tracks: [...prev.tracks, { name: '', description: '' }]
+    }));
+  };
+  
+  // Function to update a track
+  const updateTrack = (index, field, value) => {
+    setFormData(prev => {
+      const tracks = [...prev.tracks];
+      tracks[index][field] = value;
+      return { ...prev, tracks };
+    });
+  };
+  
+  // Function to remove a track
+  const removeTrack = (index) => {
+    if (formData.tracks.length > 1) {
+      setFormData(prev => {
+        const tracks = [...prev.tracks];
+        tracks.splice(index, 1);
+        return { ...prev, tracks };
+      });
+    } else {
+      showError('You must have at least one track');
+    }
+  };
+  
+  // Similar functions for prizes and sponsors
+  const addPrize = () => {
+    setFormData(prev => ({
+      ...prev,
+      prizes: [...prev.prizes, { position: '', prize: '' }]
+    }));
+  };
+  
+  const updatePrize = (index, field, value) => {
+    setFormData(prev => {
+      const prizes = [...prev.prizes];
+      prizes[index][field] = value;
+      return { ...prev, prizes };
+    });
+  };
+  
+  const removePrize = (index) => {
+    if (formData.prizes.length > 1) {
+      setFormData(prev => {
+        const prizes = [...prev.prizes];
+        prizes.splice(index, 1);
+        return { ...prev, prizes };
+      });
+    } else {
+      showError('You must have at least one prize');
+    }
+  };
+  
+  const addSponsor = () => {
+    setFormData(prev => ({
+      ...prev,
+      sponsors: [...prev.sponsors, { name: '', level: 'Gold', website: '', logoUrl: '' }]
+    }));
+  };
+  
+  const updateSponsor = (index, field, value) => {
+    setFormData(prev => {
+      const sponsors = [...prev.sponsors];
+      sponsors[index][field] = value;
+      return { ...prev, sponsors };
+    });
+  };
+  
+  const removeSponsor = (index) => {
+    if (formData.sponsors.length > 1) {
+      setFormData(prev => {
+        const sponsors = [...prev.sponsors];
+        sponsors.splice(index, 1);
+        return { ...prev, sponsors };
+      });
+    } else {
+      showError('You must have at least one sponsor');
+    }
+  };
+  
+  const addFaq = () => {
+    setFormData(prev => ({
+      ...prev,
+      faqs: [...prev.faqs, { question: '', answer: '' }]
+    }));
+  };
+  
+  const updateFaq = (index, field, value) => {
+    setFormData(prev => {
+      const faqs = [...prev.faqs];
+      faqs[index][field] = value;
+      return { ...prev, faqs };
+    });
+  };
+  
+  const removeFaq = (index) => {
+    if (formData.faqs.length > 1) {
+      setFormData(prev => {
+        const faqs = [...prev.faqs];
+        faqs.splice(index, 1);
+        return { ...prev, faqs };
+      });
+    } else {
+      showError('You must have at least one FAQ');
     }
   };
 
@@ -348,47 +557,38 @@ const AddEvent = () => {
       <Navbar />
       <div className="add-event-container">
         <div className="add-event-header">
-          <h1>Create New Hackathon Event</h1>
-          <p>Fill in the details below to create a new hackathon event</p>
+          <h1>{isEditing ? 'Edit Hackathon' : 'Create New Hackathon'}</h1>
+          <p>{isEditing ? 'Update your hackathon details' : 'Host your own hackathon event'}</p>
         </div>
-
-        {success && (
-          <div className="success-message">
-            <p>{success}</p>
-          </div>
-        )}
         
-        {error && (
-          <div className="error-message">
-            <p>{error}</p>
-          </div>
-        )}
-
+        {error && <div className="error-alert">{error}</div>}
+        {success && <div className="success-alert">{success}</div>}
+        
         <form className="add-event-form" onSubmit={handleSubmit}>
           <div className="form-section">
             <h2>Basic Information</h2>
             
             <div className="form-group">
               <label htmlFor="title">Event Title *</label>
-              <input 
+              <input
                 type="text"
                 id="title"
                 name="title"
                 value={formData.title}
-                onChange={handleChange}
-                placeholder="e.g., AI Innovation Hackathon"
+                onChange={handleInputChange}
+                placeholder="Enter the hackathon title"
                 required
               />
             </div>
             
             <div className="form-group">
-              <label htmlFor="description">Event Description *</label>
+              <label htmlFor="description">Description *</label>
               <textarea
                 id="description"
                 name="description"
                 value={formData.description}
-                onChange={handleChange}
-                placeholder="Provide a detailed description of your hackathon..."
+                onChange={handleInputChange}
+                placeholder="Provide a detailed description of your hackathon"
                 rows="5"
                 required
               ></textarea>
@@ -397,24 +597,24 @@ const AddEvent = () => {
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="date">Event Date *</label>
-                <input 
+                <input
                   type="date"
                   id="date"
                   name="date"
                   value={formData.date}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
               
               <div className="form-group">
-                <label htmlFor="time">Start Time *</label>
-                <input 
+                <label htmlFor="time">Event Time *</label>
+                <input
                   type="time"
                   id="time"
                   name="time"
                   value={formData.time}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
@@ -422,61 +622,76 @@ const AddEvent = () => {
             
             <div className="form-group">
               <label htmlFor="location">Location *</label>
-              <input 
+              <input
                 type="text"
                 id="location"
                 name="location"
                 value={formData.location}
-                onChange={handleChange}
-                placeholder="e.g., Tech Innovation Hub, Silicon Valley or Virtual (Zoom)"
+                onChange={handleInputChange}
+                placeholder="Event venue or online platform"
                 required
               />
             </div>
             
-            <div className="form-group">
-              <label htmlFor="category">Category *</label>
-              <select
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select Category</option>
-                {categories.map((category, index) => (
-                  <option key={index} value={category}>{category}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          
-          <div className="form-section">
-            <h2>Registration Details</h2>
-            
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="price">Registration Fee (₹) *</label>
-                <input 
+                <label htmlFor="category">Category *</label>
+                <select
+                  id="category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  required
+                >
+                  {categories.map(category => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="price">Entry Fee (USD)</label>
+                <input
                   type="number"
                   id="price"
                   name="price"
                   value={formData.price}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                   min="0"
-                  placeholder="e.g., 499"
+                  step="0.01"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="form-section">
+            <h2>Event Details</h2>
+            
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="registrationDeadline">Registration Deadline *</label>
+                <input
+                  type="date"
+                  id="registrationDeadline"
+                  name="registrationDeadline"
+                  value={formData.registrationDeadline}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
               
               <div className="form-group">
-                <label htmlFor="registrationDeadline">Registration Deadline *</label>
-                <input 
-                  type="date"
-                  id="registrationDeadline"
-                  name="registrationDeadline"
-                  value={formData.registrationDeadline}
-                  onChange={handleChange}
-                  required
+                <label htmlFor="maxTeamSize">Maximum Team Size</label>
+                <input
+                  type="number"
+                  id="maxTeamSize"
+                  name="maxTeamSize"
+                  value={formData.maxTeamSize}
+                  onChange={handleInputChange}
+                  min="1"
+                  max="10"
                 />
               </div>
             </div>
@@ -487,77 +702,22 @@ const AddEvent = () => {
                 id="eligibility"
                 name="eligibility"
                 value={formData.eligibility}
-                onChange={handleChange}
-                placeholder="Describe who can participate in this hackathon..."
+                onChange={handleInputChange}
+                placeholder="Who can participate in this hackathon"
                 rows="3"
                 required
               ></textarea>
             </div>
             
             <div className="form-group">
-              <label htmlFor="maxTeamSize">Maximum Team Size *</label>
-              <input 
-                type="number"
-                id="maxTeamSize"
-                name="maxTeamSize"
-                value={formData.maxTeamSize}
-                onChange={handleChange}
-                min="1"
-                max="10"
-                required
-              />
-            </div>
-          </div>
-          
-          <div className="form-section">
-            <h2>Event Image</h2>
-            
-            <div className="form-group image-upload">
-              <label htmlFor="img">Event Banner Image *</label>
-              <input 
-                type="file"
-                id="img"
-                name="img"
-                accept="image/jpeg,image/png,image/gif"
-                onChange={handleImageChange}
-                className="file-input"
-                required
-              />
-              <div className="file-input-wrapper">
-                <button 
-                  type="button" 
-                  className="file-input-button"
-                  onClick={() => document.getElementById('img').click()}
-                >
-                  Choose Image
-                </button>
-                <span>
-                  {previewImage ? 'Image selected' : 'No image selected'}
-                </span>
-              </div>
-              
-              {previewImage && (
-                <div className="image-preview">
-                  <img src={previewImage} alt="Event preview" />
-                </div>
-              )}
-              <p className="input-help">Recommended size: 1200 x 600 pixels. Max file size: 5MB</p>
-            </div>
-          </div>
-          
-          <div className="form-section">
-            <h2>Event Format</h2>
-            
-            <div className="form-group">
-              <label htmlFor="format">Event Format Description *</label>
+              <label htmlFor="format">Event Format</label>
               <textarea
                 id="format"
                 name="format"
                 value={formData.format}
-                onChange={handleChange}
-                placeholder="Describe the format of the hackathon, duration, activities, etc..."
+                onChange={handleInputChange}
+                placeholder="Describe the format, schedule, and judging criteria"
                 rows="4"
-                required
               ></textarea>
             </div>
           </div>
@@ -566,105 +726,175 @@ const AddEvent = () => {
             <h2>Prizes</h2>
             
             {formData.prizes.map((prize, index) => (
-              <div key={index} className="prize-item">
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor={`prize-position-${index}`}>Position</label>
-                    <input 
-                      type="text"
-                      id={`prize-position-${index}`}
-                      value={prize.position}
-                      onChange={(e) => handlePrizeChange(index, 'position', e.target.value)}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label htmlFor={`prize-value-${index}`}>Prize Details *</label>
-                    <input 
-                      type="text"
-                      id={`prize-value-${index}`}
-                      value={prize.prize}
-                      onChange={(e) => handlePrizeChange(index, 'prize', e.target.value)}
-                      placeholder="e.g., ₹100,000 + AWS Credits worth ₹50,000"
-                      required
-                    />
-                  </div>
-                  
-                  {index > 0 && (
-                    <button 
-                      type="button" 
-                      className="remove-item-btn"
-                      onClick={() => removePrize(index)}
-                    >
-                      ✕
-                    </button>
-                  )}
+              <div key={index} className="form-row prize-row">
+                <div className="form-group">
+                  <label htmlFor={`prize-position-${index}`}>Position</label>
+                  <input
+                    type="text"
+                    id={`prize-position-${index}`}
+                    value={prize.position}
+                    onChange={(e) => handlePrizeChange(index, 'position', e.target.value)}
+                    placeholder="e.g., 1st Place"
+                  />
                 </div>
+                
+                <div className="form-group">
+                  <label htmlFor={`prize-value-${index}`}>Prize</label>
+                  <input
+                    type="text"
+                    id={`prize-value-${index}`}
+                    value={prize.prize}
+                    onChange={(e) => handlePrizeChange(index, 'prize', e.target.value)}
+                    placeholder="e.g., $1000"
+                  />
+                </div>
+                
+                <button 
+                  type="button" 
+                  className="remove-field-btn"
+                  onClick={() => removePrizeField(index)}
+                  disabled={formData.prizes.length <= 1}
+                  title="Remove prize"
+                >
+                  X
+                </button>
               </div>
             ))}
             
             <button 
-              type="button"
-              className="add-item-btn"
-              onClick={addPrize}
+              type="button" 
+              className="add-field-btn"
+              onClick={addPrizeField}
             >
-              + Add Another Prize
+              <i className="fas fa-plus"></i> Add Prize
             </button>
           </div>
           
           <div className="form-section">
             <h2>Sponsors</h2>
+            <p className="section-description">Add organizations supporting your hackathon. The more sponsors, the better!</p>
             
             {formData.sponsors.map((sponsor, index) => (
-              <div key={index} className="sponsor-item">
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor={`sponsor-${index}`}>Sponsor Name</label>
-                    <input 
-                      type="text"
-                      id={`sponsor-${index}`}
-                      value={sponsor}
-                      onChange={(e) => handleSponsorChange(index, e.target.value)}
-                      placeholder="e.g., Google, Microsoft, etc."
-                    />
+              <div key={index} className="sponsor-card">
+                <div className="sponsor-header">
+                  <h3>Sponsor #{index + 1}</h3>
+                  <button 
+                    type="button" 
+                    className="remove-field-btn"
+                    onClick={() => removeSponsorField(index)}
+                    disabled={formData.sponsors.length <= 1}
+                    title="Remove sponsor"
+                  >
+                    X
+                  </button>
+                </div>
+                
+                <div className="sponsor-content">
+                  <div className="sponsor-logo-section">
+                    <div className="sponsor-logo-preview">
+                      {sponsor.logoUrl ? (
+                        <img src={sponsor.logoUrl} alt={`${sponsor.name} logo`} />
+                      ) : (
+                        <div className="no-logo">
+                          <i className="fas fa-building"></i>
+                          <p>No logo</p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="logo-upload">
+                      <label htmlFor={`sponsor-logo-${index}`} className="custom-file-upload">
+                        <i className="fas fa-upload"></i> Upload Logo
+                      </label>
+                      <input
+                        type="file"
+                        id={`sponsor-logo-${index}`}
+                        accept="image/*"
+                        onChange={(e) => handleSponsorLogoUpload(index, e)}
+                      />
+                    </div>
                   </div>
                   
-                  {index > 0 && (
-                    <button 
-                      type="button" 
-                      className="remove-item-btn"
-                      onClick={() => removeSponsor(index)}
-                    >
-                      ✕
-                    </button>
-                  )}
+                  <div className="sponsor-details">
+                    <div className="form-group">
+                      <label htmlFor={`sponsor-name-${index}`}>Sponsor Name *</label>
+                      <input
+                        type="text"
+                        id={`sponsor-name-${index}`}
+                        value={sponsor.name}
+                        onChange={(e) => handleSponsorChange(index, 'name', e.target.value)}
+                        placeholder="e.g., Acme Corporation"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label htmlFor={`sponsor-level-${index}`}>Sponsorship Tier</label>
+                        <select
+                          id={`sponsor-level-${index}`}
+                          value={sponsor.level}
+                          onChange={(e) => handleSponsorChange(index, 'level', e.target.value)}
+                        >
+                          <option value="Platinum">Platinum</option>
+                          <option value="Gold">Gold</option>
+                          <option value="Silver">Silver</option>
+                          <option value="Bronze">Bronze</option>
+                          <option value="Partner">Partner</option>
+                          <option value="In-Kind">In-Kind</option>
+                        </select>
+                      </div>
+                      
+                      <div className="form-group">
+                        <label htmlFor={`sponsor-website-${index}`}>Website URL</label>
+                        <input
+                          type="url"
+                          id={`sponsor-website-${index}`}
+                          value={sponsor.website}
+                          onChange={(e) => handleSponsorChange(index, 'website', e.target.value)}
+                          placeholder="https://example.com"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="form-group">
+                      <label htmlFor={`sponsor-logoUrl-${index}`}>Logo URL</label>
+                      <input
+                        type="url"
+                        id={`sponsor-logoUrl-${index}`}
+                        value={sponsor.logoUrl}
+                        onChange={(e) => handleSponsorChange(index, 'logoUrl', e.target.value)}
+                        placeholder="https://example.com/logo.png"
+                      />
+                      <p className="field-hint">If you don't upload a logo, you can provide a URL</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
             
             <button 
-              type="button"
-              className="add-item-btn"
-              onClick={addSponsor}
+              type="button" 
+              className="add-field-btn sponsor-add-btn"
+              onClick={addSponsorField}
             >
-              + Add Another Sponsor
+              <i className="fas fa-plus"></i> Add Another Sponsor
             </button>
           </div>
           
           <div className="form-section">
-            <h2>Frequently Asked Questions</h2>
+            <h2>FAQs</h2>
             
             {formData.faqs.map((faq, index) => (
-              <div key={index} className="faq-item">
+              <div key={index} className="faq-row">
                 <div className="form-group">
                   <label htmlFor={`faq-question-${index}`}>Question</label>
-                  <input 
+                  <input
                     type="text"
                     id={`faq-question-${index}`}
                     value={faq.question}
-                    onChange={(e) => handleFaqChange(index, 'question', e.target.value)}
-                    placeholder="e.g., Do I need to have a team before registering?"
+                    onChange={(e) => updateFaq(index, 'question', e.target.value)}
+                    placeholder="e.g., What should I bring?"
                   />
                 </div>
                 
@@ -673,38 +903,70 @@ const AddEvent = () => {
                   <textarea
                     id={`faq-answer-${index}`}
                     value={faq.answer}
-                    onChange={(e) => handleFaqChange(index, 'answer', e.target.value)}
-                    placeholder="Provide a detailed answer to the question..."
-                    rows="2"
+                    onChange={(e) => updateFaq(index, 'answer', e.target.value)}
+                    placeholder="Provide a detailed answer"
+                    rows="3"
                   ></textarea>
                 </div>
                 
-                {index > 0 && (
-                  <button 
-                    type="button" 
-                    className="remove-item-btn faq-remove"
-                    onClick={() => removeFaq(index)}
-                  >
-                    Remove FAQ
-                  </button>
-                )}
+                <button 
+                  type="button" 
+                  className="remove-field-btn"
+                  onClick={() => removeFaqField(index)}
+                  disabled={formData.faqs.length <= 1}
+                  title="Remove FAQ"
+                >
+                  X
+                </button>
               </div>
             ))}
             
             <button 
-              type="button"
-              className="add-item-btn"
-              onClick={addFaq}
+              type="button" 
+              className="add-field-btn"
+              onClick={addFaqField}
             >
-              + Add Another FAQ
+              <i className="fas fa-plus"></i> Add FAQ
             </button>
+          </div>
+          
+          <div className="form-section">
+            <h2>Event Image</h2>
+            
+            <div className="image-upload-container">
+              <div className="image-preview">
+                {previewImage ? (
+                  <img src={previewImage} alt="Event preview" />
+                ) : (
+                  <div className="no-image">
+                    <i className="fas fa-image"></i>
+                    <p>No image selected</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="image-upload">
+                <label htmlFor="img" className="custom-file-upload">
+                  <i className="fas fa-cloud-upload-alt"></i> 
+                  {isEditing ? 'Change Image' : 'Upload Image'}
+                </label>
+                <input
+                  type="file"
+                  id="img"
+                  name="img"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                />
+                <p className="file-hint">Recommended size: 1200 x 400 pixels (max 5MB)</p>
+              </div>
+            </div>
           </div>
           
           <div className="form-actions">
             <button 
               type="button" 
               className="cancel-btn"
-              onClick={() => navigate('/events')}
+              onClick={() => navigate(-1)}
             >
               Cancel
             </button>
@@ -713,7 +975,7 @@ const AddEvent = () => {
               className="submit-btn"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Creating Event...' : 'Create Event'}
+              {isSubmitting ? 'Saving...' : isEditing ? 'Update Hackathon' : 'Create Hackathon'}
             </button>
           </div>
         </form>

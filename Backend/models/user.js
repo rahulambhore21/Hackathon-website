@@ -1,6 +1,14 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
+const educationSchema = new mongoose.Schema({
+  occupation: { type: String, enum: ['Student', 'Professional / Post Grad'] },
+  studentLevel: { type: String, enum: ['College', 'High School', 'Middle School'] },
+  school: { type: String },
+  graduationMonth: { type: String },
+  graduationYear: { type: Number }
+});
+
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -23,6 +31,14 @@ const userSchema = new mongoose.Schema({
     announcements: { type: Boolean, default: true },
     marketing: { type: Boolean, default: false }
   },
+  // New preference fields
+  specialty: { type: String },
+  interests: [{ type: String }],
+  timezone: { type: String },
+  education: { type: educationSchema },
+  birthMonth: { type: String },
+  birthYear: { type: Number },
+  profileCompleted: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
