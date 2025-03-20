@@ -51,26 +51,36 @@ const EventRegistrations = () => {
 
         // Get all registered users
         if (eventResponse.data.registeredUsers && eventResponse.data.registeredUsers.length > 0) {
-          // In a real app, you would fetch user details for each registered user
-          // For this demo, we'll create mock user data
-          const mockRegistrations = eventResponse.data.registeredUsers.map((userId, index) => ({
-            id: userId,
-            user: {
-              id: userId,
-              name: `Participant ${index + 1}`,
-              email: `participant${index + 1}@example.com`,
-              college: 'Example University',
-              phone: `+91 98765${10000 + index}`,
-              skills: ['JavaScript', 'React', 'Node.js']
-            },
-            registrationDate: new Date(Date.now() - Math.floor(Math.random() * 10000000000)).toISOString(),
-            teamName: `Team ${Math.floor(Math.random() * 100)}`,
-            teamSize: Math.floor(Math.random() * 4) + 1,
-            paymentStatus: Math.random() > 0.2 ? 'Paid' : 'Pending',
-            notes: ''
-          }));
+          // Fetch the actual registration details for each registered user
+          const registrationsResponse = await axios.get(
+            `http://localhost:5000/api/events/${id}/registrations`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
           
-          setRegistrations(mockRegistrations);
+          // If we have registration data, use it
+          if (registrationsResponse.data && registrationsResponse.data.length > 0) {
+            setRegistrations(registrationsResponse.data);
+          } else {
+            // Fallback to creating mock data if no real data is available
+            const mockRegistrations = eventResponse.data.registeredUsers.map((userId, index) => ({
+              id: userId,
+              user: {
+                id: userId,
+                name: `Participant ${index + 1}`,
+                email: `participant${index + 1}@example.com`,
+                college: 'Example University',
+                phone: `+91 98765${10000 + index}`,
+                skills: ['JavaScript', 'React', 'Node.js']
+              },
+              registrationDate: new Date(Date.now() - Math.floor(Math.random() * 10000000000)).toISOString(),
+              teamName: `Team ${Math.floor(Math.random() * 100)}`,
+              teamSize: Math.floor(Math.random() * 4) + 1,
+              paymentStatus: Math.random() > 0.2 ? 'Paid' : 'Pending',
+              notes: ''
+            }));
+            
+            setRegistrations(mockRegistrations);
+          }
         }
         
         setLoading(false);

@@ -13,7 +13,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(true);
   
-  const { currentUser, logout, loading } = useAuth();
+  const { currentUser, logout, loading, authInitialized } = useAuth();
   // Remove problematic destructuring
   // const { showSuccess } = useNotification();
   const navigate = useNavigate();
@@ -74,12 +74,11 @@ const Navbar = () => {
     navigate(path);
   };
 
-  // Handle user logout without the notification
+  // Handle user logout with proper navigation
   const handleLogout = () => {
     logout();
-    // Remove the showSuccess call that's causing the error
-    // showSuccess('Successfully logged out');
     setShowDropdown(false);
+    // Use navigate('/') for more predictable behavior on logout
     navigate('/');
   };
 
@@ -122,9 +121,12 @@ const Navbar = () => {
         </div>
         
         <div className="navbar-sign">
-          {loading ? (
-            <div className="navbar-loading">Loading...</div>
-          ) : currentUser ? (
+          {(!authInitialized || loading) ? (
+            <div className="navbar-loading">
+              <div className="loading-spinner-small"></div>
+              <span>Loading...</span>
+            </div>
+          ) : currentUser && currentUser.id ? (
             <div className="navbar-user-dropdown" ref={dropdownRef}>
               <div 
                 className="navbar-user" 
@@ -141,11 +143,16 @@ const Navbar = () => {
                   <Link to="/profile" onClick={() => setShowDropdown(false)}>
                     <p><RiUser3Line style={{marginRight: '10px', verticalAlign: 'middle'}} /> Profile</p>
                   </Link>
-                  <Link to="/my-hackathons" onClick={() => setShowDropdown(false)}>
-                    <p><RiDashboardLine style={{marginRight: '10px', verticalAlign: 'middle'}} /> My Hackathons</p>
-                  </Link>
+                  {currentUser.role === 'admin' && (
+                    <Link to="/my-hackathons" onClick={() => setShowDropdown(false)}>
+                      <p><RiDashboardLine style={{marginRight: '10px', verticalAlign: 'middle'}} /> My Hackathons</p>
+                    </Link>
+                  )}
                   <Link to="/settings" onClick={() => setShowDropdown(false)}>
                     <p><RiSettings5Line style={{marginRight: '10px', verticalAlign: 'middle'}} /> Settings</p>
+                  </Link>
+                  <Link to="/my-events" onClick={() => setShowDropdown(false)}>
+                    <p>My Events</p>
                   </Link>
                   <hr />
                   <p onClick={handleLogout}><RiLogoutCircleRLine style={{marginRight: '10px', verticalAlign: 'middle'}} /> Logout</p>
@@ -171,8 +178,11 @@ const Navbar = () => {
               <p onClick={() => handleNavigate('/blog')}>Blog</p>
             </div>
             <div className="navbar-menu_container-links-sign">
-              {loading ? (
-                <div className="mobile-loading">Loading...</div>
+              {(!authInitialized || loading) ? (
+                <div className="mobile-loading">
+                  <div className="loading-spinner-small"></div>
+                  <span>Loading...</span>
+                </div>
               ) : currentUser ? (
                 <div className="mobile-user-menu">
                   <div className="mobile-user-header">
@@ -188,6 +198,7 @@ const Navbar = () => {
                   <p onClick={() => handleNavigate('/settings')}>
                     <RiSettings5Line style={{marginRight: '10px'}} /> Settings
                   </p>
+                  <p onClick={() => handleNavigate('/my-events')}>My Events</p>
                   <p onClick={handleLogout}>
                     <RiLogoutCircleRLine style={{marginRight: '10px'}} /> Logout
                   </p>

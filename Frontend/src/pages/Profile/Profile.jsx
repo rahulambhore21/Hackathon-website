@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useEvents } from '../../context/EventsContext';
 import { useNotification } from '../../context/NotificationContext';
 import EventCard from '../../ui/eventCard/EventCard';
+import axios from 'axios';
 
 // Default profile data outside the component to avoid re-creation on every render
 const DEFAULT_PROFILE = {
@@ -58,41 +59,92 @@ function Profile() {
 
   // Redirect if not logged in
   useEffect(() => {
-    // Simple check without calling state setters
-    if (!currentUser && !window.location.pathname.includes('authentication')) {
+    // Check if we're still loading auth state
+    const token = localStorage.getItem('token');
+    
+    // Only redirect if we're sure there's no token AND no current user
+    if (!token && !currentUser && !window.location.pathname.includes('authentication')) {
       navigate('/authentication');
     }
   }, [currentUser, navigate]);
 
   // Load user data - Fixed to prevent infinite updates
   useEffect(() => {
+    // Get token from localStorage to verify authentication
+    const token = localStorage.getItem('token');
+    
     // Only run once when component mounts and when currentUser changes
-    if (!userDataLoaded && currentUser) {
-      setUserProfile(prev => ({
-        ...prev,
-        name: currentUser.name || prev.name,
-        email: currentUser.email || prev.email,
-      }));
+    // Also check if token exists as a fallback
+    if ((!userDataLoaded && currentUser) || (!userDataLoaded && token)) {
+      // If we have a currentUser, use that data
+      if (currentUser) {
+        setUserProfile(prev => ({
+          ...prev,
+          name: currentUser.name || prev.name,
+          email: currentUser.email || prev.email,
+        }));
+      }
       setUserDataLoaded(true);
     }
   }, [currentUser, userDataLoaded]);
 
-  // Separate useEffect for loading registered events - simplified to reduce potential issues
+  // Fetch registered events from backend - simplified for reliability
   useEffect(() => {
-    if (events.length > 0 && !registeredEvents.length) {
-      // Only load once if we have events but no registered events yet
-      setLoading(true);
-      
-      const timer = setTimeout(() => {
-        // Get first 3 events as mock registered events
-        const mockRegistered = events.slice(0, 3);
-        setRegisteredEvents(mockRegistered);
+    const fetchRegisteredEvents = async () => {
+      // Only attempt to fetch if we have a valid user ID and we're on the events tab
+      if (!currentUser || !currentUser.id || activeTab !== 'events') {
+        console.log("Skipping event fetch - no user ID or not on events tab");
         setLoading(false);
-      }, 1000);
+        return;
+      }
       
-      return () => clearTimeout(timer);
+      try {
+        setLoading(true);
+        console.log("Fetching events for user:", currentUser.id);
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+          console.log("No auth token found, skipping event fetch");
+          setLoading(false);
+          return;
+        }
+        
+        // Fetch events that the user has registered for
+        const response = await axios.get(
+          `http://localhost:5000/api/events/user/${currentUser.id}`,
+          { 
+            headers: { Authorization: `Bearer ${token}` },
+            // Add timestamp to prevent caching
+            params: { _t: new Date().getTime() }
+          }
+        );
+        
+        console.log("API Response:", response.data);
+        
+        if (response.data && Array.isArray(response.data)) {
+          setRegisteredEvents(response.data);
+          console.log("Set registered events:", response.data);
+        } else {
+          console.error("Invalid response format:", response.data);
+          setRegisteredEvents([]);
+        }
+      } catch (err) {
+        console.error("Error fetching registered events:", err.response || err);
+        setRegisteredEvents([]); // Set empty array on error
+        if (typeof showError === 'function') {
+          showError('Failed to load your registered events');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Call the fetch function when the tab changes to 'events'
+    if (activeTab === 'events') {
+      fetchRegisteredEvents();
     }
-  }, [events, registeredEvents.length]);
+    
+  }, [currentUser, activeTab, showError]);
 
   // Safe notification function to prevent errors if showError is undefined
   const safeShowError = (message) => {
@@ -188,14 +240,14 @@ function Profile() {
     setChangePasswordModalOpen(false);
   };
 
-  // Render loading state - simplified to make sure we don't get stuck
-  if (loading && !registeredEvents.length) {
+  // Render loading state - ensure it correctly shows when loading
+  if (activeTab === 'events' && loading) {
     return (
       <>
         <Navbar />
         <div className="profile-loading">
           <div className="profile-loading-spinner"></div>
-          <p>Loading profile...</p>
+          <p>Loading your events...</p>
         </div>
       </>
     );
@@ -264,12 +316,6 @@ function Profile() {
             onClick={() => setActiveTab('profile')}
           >
             <i className="fas fa-user"></i> Profile
-          </button>
-          <button 
-            className={`profile-tab ${activeTab === 'events' ? 'active' : ''}`}
-            onClick={() => setActiveTab('events')}
-          >
-            <i className="fas fa-calendar-alt"></i> My Events
           </button>
           <button 
             className={`profile-tab ${activeTab === 'settings' ? 'active' : ''}`}
@@ -436,51 +482,6 @@ function Profile() {
                       ))}
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'events' && (
-            <div className="profile-section">
-              <div className="profile-section-header">
-                <h2>My Registered Events</h2>
-                <button 
-                  className="profile-action-button"
-                  onClick={() => navigate('/events')}
-                >
-                  <i className="fas fa-search"></i> Find Events
-                </button>
-              </div>
-              {loading ? (
-                <div className="profile-loading">
-                  <div className="profile-loading-spinner"></div>
-                  <p>Loading your events...</p>
-                </div>
-              ) : registeredEvents.length > 0 ? (
-                <div className="profile-events-grid">
-                  {registeredEvents.map(event => (
-                    <EventCard
-                      key={event.id}
-                      id={event.id}
-                      title={event.title}
-                      description={event.description}
-                      img={event.img}
-                      date={event.date}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="profile-no-events">
-                  <i className="fas fa-calendar-times"></i>
-                  <h3>No registered events</h3>
-                  <p>You haven't registered for any hackathons yet.</p>
-                  <button 
-                    className="profile-action-button"
-                    onClick={() => navigate('/events')}
-                  >
-                    Browse Events
-                  </button>
                 </div>
               )}
             </div>

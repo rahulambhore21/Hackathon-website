@@ -2,20 +2,30 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './EventCard.css';
 
-function EventCard({ id, title, description, img, date = "Upcoming", location = "Virtual" }) {
-  // Truncate description if it's too long
-  const truncatedDescription = description && description.length > 100 
-    ? `${description.substring(0, 100)}...` 
-    : description;
+const EventCard = ({ id, title, description, img, date = "Upcoming", location = "Virtual" }) => {
+  // Add error handling for image loading
+  const handleImageError = (e) => {
+    e.target.src = 'https://via.placeholder.com/300x150?text=No+Image';
+  };
   
+  // Truncate description to a reasonable length
+  const truncateDescription = (text, maxLength = 100) => {
+    if (!text) return '';
+    return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+  };
+
+  // For debugging
+  console.log("EventCard props:", { id, title, description, img, date });
+
   return (
     <Link to={`/event/${id}`} className="event-card-link">
       <div className="event-card">
         <div className="card-image-container">
           <img 
             src={img || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1000'} 
-            alt={title} 
+            alt={title || "Event"} 
             className="card-image" 
+            onError={handleImageError}
           />
           <div className="event-badge">{date}</div>
         </div>
@@ -26,12 +36,12 @@ function EventCard({ id, title, description, img, date = "Upcoming", location = 
             <span>{location}</span>
           </div>
           <p className="card-description">
-            {truncatedDescription || "Join us for this amazing event that will feature great speakers, networking opportunities, and much more!"}
+            {truncateDescription(description) || "Join us for this amazing event that will feature great speakers, networking opportunities, and much more!"}
           </p>
         </div>
       </div>
     </Link>
   );
-}
+};
 
 export default EventCard;

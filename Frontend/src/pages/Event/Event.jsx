@@ -38,11 +38,12 @@ const Event = () => {
 
   // Handle user registration for the event
   const registerForEvent = async () => {
-    // Check if the user is logged in
-    if (!currentUser) {
+    // Check if the user is logged in with a valid ID
+    if (!currentUser?.id) {
       setError('Please login to register for this event.');
       setSuccess('');
       if (showError) showError('Please login to register for this event.');
+      navigate('/authentication');
       return;
     }
     
@@ -53,11 +54,20 @@ const Event = () => {
       const token = localStorage.getItem('token');
       
       // Call the backend API to register for event
-      await axios.post(
+      const response = await axios.post(
         `http://localhost:5000/api/events/${id}/register`, 
         {}, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      
+      console.log('Registration successful:', response.data);
+      
+      // Update the event state to reflect registration
+      setEvent(prev => ({
+        ...prev,
+        registeredCount: (prev.registeredCount || 0) + 1,
+        registeredUsers: [...(prev.registeredUsers || []), currentUser.id]
+      }));
       
       setSuccess('Successfully registered for the event!');
       setError('');

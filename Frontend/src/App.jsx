@@ -11,6 +11,7 @@ import AddEvent from './pages/AddEvent/AddEvent';
 import EditEvent from './pages/EditEvent/EditEvent';
 import Profile from './pages/Profile/Profile';
 import MyHackathons from './pages/MyHackathons/MyHackathons';
+import MyEvents from './pages/MyEvents/MyEvents';
 import EventRegistrations from './pages/EventRegistrations/EventRegistrations';
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
           <Route path="/edit-event/:id" element={<EditEvent />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/my-hackathons" element={<MyHackathons />} />
+          <Route path="/my-events" element={<MyEvents />} />
           <Route path="/event-registrations/:id" element={<EventRegistrations />} />
           <Route path="*" element={<div>Page not found</div>} />
         </Routes>

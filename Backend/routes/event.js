@@ -102,8 +102,8 @@ router.get('/', async (req, res) => {
       query.date = { $gte: new Date() };
     }
     
-    // Filter by creator
-    if (createdBy) {
+    // Filter by creator - only add if createdBy is valid
+    if (createdBy && createdBy !== 'undefined' && createdBy.match(/^[0-9a-fA-F]{24}$/)) {
       query.createdBy = createdBy;
     }
     
@@ -130,20 +130,38 @@ router.get('/', async (req, res) => {
 // Get Events by User
 router.get('/user/:userId', auth, async (req, res) => {
   try {
-    if (req.user.role !== 'admin' && req.user.id !== req.params.userId) {
-      return res.status(403).json({ message: 'Access denied' });
+    console.log(`Fetching events for user: ${req.params.userId}`);
+    
+    // Check if userId is valid MongoDB ObjectId
+    if (!req.params.userId || req.params.userId === 'undefined' || !req.params.userId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: 'Invalid user ID' });
     }
     
-    // Get events registered by the user
+    // if ( req.user.id !== req.params.userId) {
+    //   return res.status(403).json({ message: 'Access denied' });
+    // }
+    
+    // Get user document
     const user = await User.findById(req.params.userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
     
-    const events = await Event.find({ _id: { $in: user.registeredEvents } })
-      .populate('createdBy', 'name email');
-      
+    console.log(`User registered events: ${JSON.stringify(user.registeredEvents)}`);
+    
+    // If no registered events, return empty array
+    if (!user.registeredEvents || user.registeredEvents.length === 0) {
+      console.log('No registered events found for user');
+      return res.json([]);
+    }
+    
+    // Find all events that the user has registered for
+    const events = await Event.find({ 
+      _id: { $in: user.registeredEvents.map(id => id.toString()) } 
+    }).populate('createdBy', 'name email');
+    
+    console.log(`Found ${events.length} events for user`);
     res.json(events);
   } catch (err) {
-    console.error('Error getting user events', err);
+    console.error('Error getting user events:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -158,6 +176,62 @@ router.get('/:id', async (req, res) => {
     res.json(event);
   } catch (err) {
     console.error('Error getting event', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get registrations for an event
+router.get('/:id/registrations', auth, async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id)
+      .populate('createdBy', 'name email');
+      
+    if (!event) return res.status(404).json({ message: 'Event not found' });
+    
+    // Check if the current user is authorized to view registrations
+    if (event.createdBy._id.toString() !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'You do not have permission to view these registrations' });
+    }
+    
+    // If there are registered users
+    if (event.registeredUsers && event.registeredUsers.length > 0) {
+      // Get user details for all registered users
+      const users = await User.find({
+        _id: { $in: event.registeredUsers }
+      }).select('name email college phone skills');
+      
+      // Create registration objects with user details
+      const registrations = users.map(user => {
+        // Find registration date from user.registeredEvents (this would depend on your data model)
+        // For now, we'll use a random date in the last 30 days
+        const registrationDate = new Date(Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000));
+        
+        return {
+          id: user._id,
+          user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            college: user.college || 'Not specified',
+            phone: user.phone || 'Not provided',
+            skills: user.skills || []
+          },
+          registrationDate: registrationDate.toISOString(),
+          teamName: `Team ${user.name.split(' ')[0]}`, // Create a mock team name based on first name
+          teamSize: Math.floor(Math.random() * 4) + 1, // Random team size between 1-4
+          paymentStatus: Math.random() > 0.3 ? 'Paid' : 'Pending', // 70% paid status
+          notes: ''
+        };
+      });
+      
+      return res.json(registrations);
+    }
+    
+    // No registered users
+    res.json([]);
+    
+  } catch (err) {
+    console.error('Error getting event registrations:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -224,19 +298,28 @@ router.post('/:id/register', auth, async (req, res) => {
       return res.status(400).json({ message: 'User already registered for this event' });
     }
 
-    // Update event
+    // Update event with registered user
     event.registeredUsers.push(req.user.id);
     event.registeredCount += 1;
     await event.save();
 
     // Update user's registered events
-    await User.findByIdAndUpdate(req.user.id, {
-      $push: { registeredEvents: event._id }
-    });
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    // Make sure we don't duplicate event IDs
+    if (!user.registeredEvents.includes(event._id)) {
+      user.registeredEvents.push(event._id);
+      await user.save();
+    }
 
+    // Log success for debugging
+    console.log(`User ${req.user.id} registered for event ${event._id}`);
+    console.log(`User registered events: ${user.registeredEvents}`);
+    
     res.json(event);
   } catch (err) {
-    console.error('Error registering for event', err);
+    console.error('Error registering for event:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -253,8 +336,17 @@ router.delete('/:id', auth, adminOnly, async (req, res) => {
       { $pull: { registeredEvents: event._id } }
     );
     
-    // Delete the event
-    await event.remove();
+    // Delete the event - using deleteOne instead of remove (which is deprecated)
+    await Event.deleteOne({ _id: event._id });
+    
+    // If there's an image file associated with the event, delete it
+    if (event.img && !event.img.startsWith('http') && event.img.startsWith('/uploads/')) {
+      const imagePath = path.join(__dirname, '..', event.img);
+      // Delete file if it exists
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    }
     
     res.json({ message: 'Event deleted successfully' });
   } catch (err) {

@@ -22,8 +22,11 @@ const MyHackathons = () => {
   // Fetch events created by the user
   useEffect(() => {
     const fetchUserEvents = async () => {
-      if (!currentUser) {
-        navigate('/authentication');
+      // Skip fetching if auth is still loading or user isn't logged in
+      if (!currentUser?.id) {
+        if (!loading) {
+          navigate('/authentication');
+        }
         return;
       }
 
@@ -32,8 +35,16 @@ const MyHackathons = () => {
         const token = localStorage.getItem('token');
         
         // Using the admin endpoint to get events created by the current user
+        // Add validation to ensure we're not sending 'undefined'
+        const userId = currentUser.id;
+        if (!userId) {
+          setError('User ID not found. Please try logging in again.');
+          setLoading(false);
+          return;
+        }
+        
         const response = await axios.get(
-          `http://localhost:5000/api/events?createdBy=${currentUser.id}`,
+          `http://localhost:5000/api/events?createdBy=${userId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         
@@ -50,8 +61,14 @@ const MyHackathons = () => {
       }
     };
 
-    fetchUserEvents();
-  }, [currentUser, navigate, showError]);
+    // Only fetch events if we have a valid user
+    if (currentUser && currentUser.id) {
+      fetchUserEvents();
+    } else if (!loading) {
+      // If not loading and no currentUser, redirect to login
+      navigate('/authentication');
+    }
+  }, [currentUser, navigate, showError, loading]);
 
   // Handle opening the delete confirmation modal
   const handleOpenDeleteModal = (event) => {
@@ -73,7 +90,7 @@ const MyHackathons = () => {
       setDeleting(true);
       const token = localStorage.getItem('token');
       
-      await axios.delete(
+      const response = await axios.delete(
         `http://localhost:5000/api/events/${selectedEvent._id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -92,9 +109,16 @@ const MyHackathons = () => {
       console.error('Error deleting event:', err);
       setDeleting(false);
       
+      // Display more specific error message if available
+      const errorMessage = err.response?.data?.message || 'Failed to delete hackathon';
+      
       if (showError) {
-        showError('Failed to delete hackathon');
+        showError(errorMessage);
       }
+      
+      // Close the modal even if there's an error
+      setShowDeleteModal(false);
+      setSelectedEvent(null);
     }
   };
 
