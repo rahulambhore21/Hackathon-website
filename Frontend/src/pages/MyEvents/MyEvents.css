@@ -1,7 +1,8 @@
 .my-events-container {
   max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  min-height: calc(100vh - 200px);
 }
 
 .my-events-header {
@@ -11,94 +12,49 @@
 
 .my-events-header h1 {
   font-size: 2.5rem;
-  color: #333;
   margin-bottom: 0.5rem;
+  color: var(--color-primary);
 }
 
 .my-events-header p {
-  font-size: 1.2rem;
-  color: #666;
+  color: var(--color-text-secondary);
+  font-size: 1.1rem;
 }
 
-.loading-container,
-.error-container,
-.no-events {
+.events-filter {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  min-height: 300px;
-  text-align: center;
-  padding: 2rem;
+  margin-bottom: 2rem;
+  gap: 0.5rem;
 }
 
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #4f46e5;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.error-container p {
-  color: #ef4444;
-  margin-bottom: 1rem;
-}
-
-.error-container button,
-.find-events-button {
-  background-color: #4f46e5;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  font-weight: 500;
+.events-filter button {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  padding: 0.5rem 1.5rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  font-weight: 500;
+  border-radius: 30px;
+  transition: all 0.3s ease;
 }
 
-.error-container button:hover,
-.find-events-button:hover {
-  background-color: #4338ca;
+.events-filter button:hover {
+  background: var(--color-bg-hover);
 }
 
-.no-events {
-  background-color: #f9fafb;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.no-events i {
-  font-size: 3rem;
-  color: #9ca3af;
-  margin-bottom: 1rem;
-}
-
-.no-events h3 {
-  font-size: 1.5rem;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.no-events p {
-  color: #6b7280;
-  margin-bottom: 1.5rem;
+.events-filter button.active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
 }
 
 .events-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 2rem;
+  margin-top: 2rem;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .my-events-header h1 {
     font-size: 2rem;
@@ -111,4 +67,181 @@
   .events-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.event-card {
+  background: var(--color-card-bg);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.event-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.event-image {
+  height: 180px;
+  position: relative;
+  overflow: hidden;
+}
+
+.event-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.event-card:hover .event-image img {
+  transform: scale(1.1);
+}
+
+.past-event-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--color-danger);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.event-content {
+  padding: 1.5rem;
+  flex-grow: 1;
+}
+
+.event-content h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+  color: var(--color-text-primary);
+}
+
+.event-date {
+  color: var(--color-primary);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.event-location, .registration-date {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.event-actions {
+  padding: 1rem 1.5rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.view-button, .unregister-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.view-button {
+  background: var(--color-primary);
+  color: white;
+  flex-grow: 1;
+}
+
+.view-button:hover {
+  background: var(--color-primary-dark);
+}
+
+.unregister-button {
+  background: var(--color-bg);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+}
+
+.unregister-button:hover {
+  background: var(--color-danger-light);
+}
+
+.loading-container, .error-container, .no-events, .auth-required {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 1rem;
+  min-height: 400px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--color-primary);
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-container {
+  color: var(--color-danger);
+}
+
+.error-container button, .no-events button, .auth-required button {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.error-container button:hover, .no-events button:hover, .auth-required button:hover {
+  background: var(--color-primary-dark);
+}
+
+.no-events i, .auth-required i {
+  font-size: 3rem;
+  color: var(--color-primary);
+  margin-bottom: 1rem;
+}
+
+.no-events h3, .auth-required h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-text-primary);
+}
+
+.no-events p, .auth-required p {
+  color: var(--color-text-secondary);
+  margin-bottom: 1rem;
+}
+
+.browse-events-button {
+  background: var(--color-primary) !important;
 }

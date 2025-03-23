@@ -12,6 +12,10 @@ import PreferencesForm from './components/PreferencesForm/PreferencesForm';
 import AddEvent from './pages/AddEvent/AddEvent';
 import AppContextProvider from './context/AppContextProvider';
 import { useAuth } from './context/AuthContext';
+import HostDashboard from './pages/HostDashboard/HostDashboard';
+import EventRegistrations from './pages/EventRegistrations/EventRegistrations';
+import Blogs from './pages/Blogs/Blogs';
+import Blog from './pages/Blog/Blog';
 import './App.css';
 
 function AppRoutes() {
@@ -26,10 +30,15 @@ function AppRoutes() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/my-events" element={<MyEvents />} />
         <Route path="/my-hackathons" element={<MyHackathons />} />
+        <Route path="/host-dashboard" element={<HostDashboard />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/events/:id" element={<EventDetails />} />
+        <Route path="/event/:id" element={<EventDetails />} />
         <Route path="/create-event" element={<AddEvent />} />
         <Route path="/edit-event/:id" element={<AddEvent />} />
+        <Route path="/event-registrations/:id" element={<EventRegistrations />} />
+        <Route path="/blogs" element={<Blogs />} />
+        <Route path="/blogs/:id" element={<Blog />} />
         <Route path="/preferences" element={<PreferencesForm />} />
       </Routes>
     </>

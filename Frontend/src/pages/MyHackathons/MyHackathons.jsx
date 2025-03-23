@@ -116,12 +116,20 @@ const MyHackathons = () => {
         <div className="my-hackathons-header">
           <h1>My Hosted Hackathons</h1>
           <p>Manage the hackathons you've created</p>
-          <button 
-            className="create-hackathon-button"
-            onClick={handleCreateEvent}
-          >
-            <i className="fas fa-plus"></i> Create New Hackathon
-          </button>
+          <div className="header-actions">
+            <button 
+              className="create-hackathon-button"
+              onClick={handleCreateEvent}
+            >
+              <i className="fas fa-plus"></i> Create New Hackathon
+            </button>
+            <button 
+              className="dashboard-button"
+              onClick={() => navigate('/host-dashboard')}
+            >
+              <i className="fas fa-tachometer-alt"></i> Host Dashboard
+            </button>
+          </div>
         </div>
 
         {loading ? (

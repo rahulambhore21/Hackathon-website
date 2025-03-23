@@ -180,6 +180,9 @@ const Navbar = () => {
                   <Link to="/my-hackathons" onClick={() => setShowDropdown(false)}>
                     <p><RiDashboardLine style={{marginRight: '10px', verticalAlign: 'middle'}} /> My Hackathons</p>
                   </Link>
+                  <Link to="/host-dashboard" onClick={() => setShowDropdown(false)}>
+                    <p><RiDashboardLine style={{marginRight: '10px', verticalAlign: 'middle'}} /> Host Dashboard</p>
+                  </Link>
                   <Link to="/settings" onClick={() => setShowDropdown(false)}>
                     <p><RiSettings5Line style={{marginRight: '10px', verticalAlign: 'middle'}} /> Settings</p>
                   </Link>
@@ -228,6 +231,9 @@ const Navbar = () => {
                   </p>
                   <p onClick={() => handleNavigate('/my-hackathons')}>
                     <RiDashboardLine style={{marginRight: '10px'}} /> My Hackathons
+                  </p>
+                  <p onClick={() => handleNavigate('/host-dashboard')}>
+                    <RiDashboardLine style={{marginRight: '10px'}} /> Host Dashboard
                   </p>
                   <p onClick={() => handleNavigate('/settings')}>
                     <RiSettings5Line style={{marginRight: '10px'}} /> Settings

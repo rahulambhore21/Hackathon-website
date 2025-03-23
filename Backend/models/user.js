@@ -1,72 +1,109 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const educationSchema = new mongoose.Schema({
-  occupation: { type: String, enum: ['Student', 'Professional / Post Grad'] },
-  studentLevel: { type: String, enum: ['College', 'High School', 'Middle School'] },
-  school: { type: String },
-  graduationMonth: { type: String },
-  graduationYear: { type: Number }
-});
-
 const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  college: { type: String, required: true },
-  password: { type: String, required: true },
-  role: { type: String, enum: ['user', 'admin'], default: 'admin' },
-  phone: { type: String },
-  bio: { type: String },
-  location: { type: String },
-  skills: [{ type: String }],
-  profileImage: { type: String },
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true
+  },
+  password: {
+    type: String,
+    required: true,
+    minlength: 6
+  },
+  college: {
+    type: String,
+    trim: true
+  },
+  phone: {
+    type: String,
+    trim: true
+  },
+  bio: {
+    type: String
+  },
+  location: {
+    type: String
+  },
+  skills: [String],
+  profileImage: {
+    type: String
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
+  },
   socialLinks: {
-    linkedin: { type: String },
-    github: { type: String },
-    website: { type: String }
+    linkedin: String,
+    github: String,
+    website: String
   },
-  registeredEvents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }],
+  preferences: {
+    specialty: String,
+    interests: [String],
+    timezone: String
+  },
   emailNotifications: {
-    eventReminders: { type: Boolean, default: true },
-    announcements: { type: Boolean, default: true },
-    marketing: { type: Boolean, default: false }
+    eventReminders: {
+      type: Boolean,
+      default: true
+    },
+    announcements: {
+      type: Boolean,
+      default: true
+    },
+    marketing: {
+      type: Boolean,
+      default: false
+    }
   },
-  // New preference fields
-  specialty: { type: String },
-  interests: [{ type: String }],
-  timezone: { type: String },
-  education: { type: educationSchema },
-  birthMonth: { type: String },
-  birthYear: { type: Number },
-  profileCompleted: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  registeredEvents: [
+    {
+      eventId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Event'
+      },
+      registrationDate: {
+        type: Date,
+        default: Date.now
+      }
+    }
+  ],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  profileCompleted: {
+    type: Boolean,
+    default: false
+  }
 });
 
-// Password hashing pre-save hook
-userSchema.pre('save', async function (next) {
-  if (this.isModified('password')) {
-    this.password = await bcrypt.hash(this.password, 10);
-  }
+// Hash password before saving
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
   
-  // Update the updatedAt field
-  if (this.isModified()) {
-    this.updatedAt = Date.now();
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (err) {
+    next(err);
   }
-  
-  next();
 });
 
-// Method to compare password
-userSchema.methods.comparePassword = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
+// Compare password method
+userSchema.methods.comparePassword = async function(password) {
+  return await bcrypt.compare(password, this.password);
 };
 
-// Method to get public profile
-userSchema.methods.getPublicProfile = function() {
-  const userObject = this.toObject();
-  delete userObject.password;
-  return userObject;
-};
-
-module.exports = mongoose.models.User || mongoose.model('User', userSchema);
+module.exports = mongoose.model('User', userSchema);

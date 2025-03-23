@@ -1,45 +1,50 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
-const authRoutes = require('./routes/auth');
-const eventRoutes = require('./routes/event');
-const blogRoutes = require('./routes/blog');
-const profileRoutes = require('./routes/profile');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 const path = require('path');
-require('dotenv').config();
+const fs = require('fs');
 
+// Load environment variables
+dotenv.config();
+
+// Create Express app
 const app = express();
-const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI;
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Static files for uploads
+// Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/events', eventRoutes);
-app.use('/api/blogs', blogRoutes);
-app.use('/api/profiles', profileRoutes);
+// Define routes
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/events', require('./routes/event'));
+app.use('/api/profiles', require('./routes/profile'));
+app.use('/api/blogs', require('./routes/blog'));
 
 // Basic route
 app.get('/', (req, res) => {
-  res.send('Hackathon Platform API is running');
+  res.send('API is running...');
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!', error: err.message });
-});
+// Connect to MongoDB
+if (process.env.MONGODB_URI) {
+  mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('MongoDB Connected'))
+    .catch(err => console.error('MongoDB connection error:', err));
+} else {
+  console.log('No MongoDB URI provided. Running in development mode with mock data.');
+}
 
-// Connect to MongoDB and start server
-mongoose.connect(MONGO_URI)
-  .then(() => {
-    console.log('MongoDB connected');
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  })
-  .catch(err => console.log('MongoDB connection error:', err));
+// Set port and start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

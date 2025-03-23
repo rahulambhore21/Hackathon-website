@@ -180,7 +180,7 @@ const EventDetails = () => {
 
   const eventImage = event.img && typeof event.img === 'string'
     ? (event.img.startsWith('http') ? event.img : `http://localhost:5000${event.img}`)
-    : 'https://via.placeholder.com/1200x400?text=Hackathon';
+    : 'https://via.placeholder.com/1200x500?text=Hackathon';
 
   const isUpcoming = new Date(event.date) > new Date();
   const isPastDeadline = new Date(event.registrationDeadline) < new Date();
@@ -189,7 +189,14 @@ const EventDetails = () => {
     <>
       <Navbar />
       <div className="event-details-container">
-        <div className="event-details-hero" style={{ backgroundImage: `url(${eventImage})` }}>
+        <div 
+          className="event-details-hero" 
+          style={{ 
+            backgroundImage: `url(${eventImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center center'
+          }}
+        >
           <div className="event-hero-overlay"></div>
           <div className="event-hero-content">
             <div className="event-meta">

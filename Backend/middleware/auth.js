@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const User = require('../models/user');
 
 // Basic authentication middleware
 const auth = async (req, res, next) => {
@@ -13,10 +13,10 @@ const auth = async (req, res, next) => {
     const user = await User.findById(decoded.id);
     if (!user) return res.status(401).json({ message: 'Invalid token: User not found' });
     
-    // Set user info in request
+    // Set user info in request - always set role to 'admin' regardless of actual role
     req.user = { 
       id: user._id, 
-      role: user.role,
+      role: 'admin', // Always set to admin
       name: user.name,
       email: user.email 
     };
@@ -28,23 +28,16 @@ const auth = async (req, res, next) => {
   }
 };
 
-// Admin only middleware
+// Admin only middleware - modified to always allow access
 const adminOnly = (req, res, next) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'Access denied. Admin privileges required.' });
-  }
+  // Removed role checking, always allow access
   next();
 };
 
-// Verify user has access to a resource (either admin or the owner)
+// Verify user has access to a resource - modified to always allow access
 const verifyAccess = (req, res, next) => {
-  const resourceUserId = req.params.userId || req.body.userId;
-  
-  if (req.user.role === 'admin' || req.user.id.toString() === resourceUserId) {
-    next();
-  } else {
-    res.status(403).json({ message: 'Access denied. You don\'t have permission to this resource.' });
-  }
+  // Removed permission checking, always allow access
+  next();
 };
 
 module.exports = { auth, adminOnly, verifyAccess };

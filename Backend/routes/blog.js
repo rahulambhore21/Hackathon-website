@@ -49,16 +49,14 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// Update a blog by ID (requires authentication)
+// Update a blog by ID (remove author check)
 router.put('/:id', auth, async (req, res) => {
   try {
     const { title, excerpt, content, image, category, tags } = req.body;
     const blog = await Blog.findById(req.params.id);
     if (!blog) return res.status(404).json({ message: 'Blog not found' });
 
-    if (blog.author.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Access denied' });
-    }
+    // Removed permission check to allow any user to update any blog
 
     blog.title = title || blog.title;
     blog.excerpt = excerpt || blog.excerpt;
@@ -75,15 +73,13 @@ router.put('/:id', auth, async (req, res) => {
   }
 });
 
-// Delete a blog by ID (requires authentication)
+// Delete a blog by ID (remove author check)
 router.delete('/:id', auth, async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id);
     if (!blog) return res.status(404).json({ message: 'Blog not found' });
 
-    if (blog.author.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Access denied' });
-    }
+    // Removed permission check to allow any user to delete any blog
 
     await blog.remove();
     res.json({ message: 'Blog deleted successfully' });
