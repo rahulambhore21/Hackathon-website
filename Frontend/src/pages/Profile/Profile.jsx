@@ -10,17 +10,8 @@ import EventCard from '../../ui/eventCard/EventCard';
 import PreferencesForm from '../../components/PreferencesForm/PreferencesForm';
 import axios from 'axios';
 
-// Default profile data outside the component to avoid re-creation on every render
-const DEFAULT_PROFILE = {
-  name: 'Rahul Sharma',
-  email: 'rahul.sharma@example.com',
-  phone: '9876543210',
-  github: 'https://github.com/rahulsharma-dev',
-  linkedin: 'https://linkedin.com/in/rahulsharma',
-  website: 'https://rahulsharma.dev'
-};
-
-const DEFAULT_PROFILE_IMAGE = 'https://randomuser.me/api/portraits/men/32.jpg';
+// Default profile image as fallback
+const DEFAULT_PROFILE_IMAGE = 'https://via.placeholder.com/150';
 
 function Profile() {
   const navigate = useNavigate();
@@ -41,7 +32,22 @@ function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState(DEFAULT_PROFILE_IMAGE);
   const [profileImageFile, setProfileImageFile] = useState(null);
-  const [userProfile, setUserProfile] = useState(DEFAULT_PROFILE);
+  const [userProfile, setUserProfile] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    github: '',
+    linkedin: '',
+    website: '',
+    location: '',
+    specialty: '',
+    skills: '',
+    interests: [],
+    timezone: '',
+    education: {},
+    birthMonth: '',
+    birthYear: ''
+  });
   
   // Mock registered events (in a real app, this would come from the backend)
   const [registeredEvents, setRegisteredEvents] = useState([]);
@@ -76,26 +82,35 @@ function Profile() {
     if ((!userDataLoaded && currentUser) || (!userDataLoaded && token)) {
       // If we have a currentUser, use that data
       if (currentUser) {
-        setUserProfile(prev => ({
-          ...prev,
-          name: currentUser.name || prev.name,
-          email: currentUser.email || prev.email,
-          phone: currentUser.phone || prev.phone,
+        setUserProfile({
+          name: currentUser.name || '',
+          email: currentUser.email || '',
+          phone: currentUser.phone || '',
           // Set social links if available in the user profile
-          github: currentUser.socialLinks?.github || prev.github,
-          linkedin: currentUser.socialLinks?.linkedin || prev.linkedin,
-          website: currentUser.socialLinks?.website || prev.website,
-          // Add new profile data
-          specialty: currentUser.specialty || '',
+          github: currentUser.socialLinks?.github || '',
+          linkedin: currentUser.socialLinks?.linkedin || '',
+          website: currentUser.socialLinks?.website || '',
+          // Add profile data
+          specialty: currentUser.preferences?.specialty || '',
           location: currentUser.location || '',
           skills: Array.isArray(currentUser.skills) ? currentUser.skills.join(', ') : '',
-          interests: currentUser.interests || [],
-          timezone: currentUser.timezone || '',
+          interests: currentUser.preferences?.interests || [],
+          timezone: currentUser.preferences?.timezone || '',
           // Education information
           education: currentUser.education || {},
           birthMonth: currentUser.birthMonth || '',
-          birthYear: currentUser.birthYear || ''
-        }));
+          birthYear: currentUser.birthYear || '',
+          college: currentUser.college || '',
+          bio: currentUser.bio || ''
+        });
+        
+        // Set profile image if available
+        if (currentUser.profileImage) {
+          const imageUrl = currentUser.profileImage.startsWith('http') 
+            ? currentUser.profileImage 
+            : `http://localhost:5000${currentUser.profileImage}`;
+          setProfileImage(imageUrl);
+        }
       }
       setUserDataLoaded(true);
     }
@@ -202,35 +217,110 @@ function Profile() {
     }
   };
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     // Validate form
     if (!userProfile.name.trim() || !userProfile.email.trim()) {
       safeShowError('Name and email are required');
       return;
     }
     
-    // In a real app, you would send this data to the backend
-    console.log('Saving profile:', userProfile);
-    console.log('New profile image:', profileImageFile);
-    
-    if (typeof showSuccess === 'function') {
-      showSuccess('Profile updated successfully!');
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      if (!token || !currentUser || !currentUser.id) {
+        safeShowError('Authentication required');
+        setLoading(false);
+        return;
+      }
+      
+      // Prepare profile data
+      const profileData = {
+        name: userProfile.name,
+        email: userProfile.email,
+        phone: userProfile.phone,
+        location: userProfile.location,
+        skills: userProfile.skills.split(',').map(skill => skill.trim()).filter(Boolean),
+        socialLinks: {
+          github: userProfile.github,
+          linkedin: userProfile.linkedin,
+          website: userProfile.website
+        },
+        bio: userProfile.bio,
+        college: userProfile.college
+      };
+      
+      // Handle profile image upload if changed
+      if (profileImageFile) {
+        const formData = new FormData();
+        formData.append('profileImage', profileImageFile);
+        
+        // First upload the image
+        await axios.post(
+          `http://localhost:5000/api/users/${currentUser.id}/profile-image`,
+          formData,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+      
+      // Then update the profile data
+      await axios.put(
+        `http://localhost:5000/api/users/${currentUser.id}`,
+        profileData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      if (typeof showSuccess === 'function') {
+        showSuccess('Profile updated successfully!');
+      }
+      
+      // Refresh user data in auth context if available
+      if (typeof auth.refreshUserData === 'function') {
+        auth.refreshUserData();
+      }
+      
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      safeShowError('Failed to update profile. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    setIsEditing(false);
   };
 
   const handleCancelEdit = () => {
     // Reset form to original data
     if (currentUser) {
       setUserProfile({
-        ...DEFAULT_PROFILE,
-        name: currentUser.name || DEFAULT_PROFILE.name,
-        email: currentUser.email || DEFAULT_PROFILE.email,
+        name: currentUser.name || '',
+        email: currentUser.email || '',
+        phone: currentUser.phone || '',
+        github: currentUser.socialLinks?.github || '',
+        linkedin: currentUser.socialLinks?.linkedin || '',
+        website: currentUser.socialLinks?.website || '',
+        location: currentUser.location || '',
+        specialty: currentUser.preferences?.specialty || '',
+        skills: Array.isArray(currentUser.skills) ? currentUser.skills.join(', ') : '',
+        interests: currentUser.preferences?.interests || [],
+        timezone: currentUser.preferences?.timezone || '',
+        education: currentUser.education || {},
+        birthMonth: currentUser.birthMonth || '',
+        birthYear: currentUser.birthYear || '',
+        college: currentUser.college || '',
+        bio: currentUser.bio || ''
       });
-      setProfileImage(DEFAULT_PROFILE_IMAGE);
-    } else {
-      setUserProfile(DEFAULT_PROFILE);
-      setProfileImage(DEFAULT_PROFILE_IMAGE);
+      
+      // Reset profile image
+      if (currentUser.profileImage) {
+        const imageUrl = currentUser.profileImage.startsWith('http') 
+          ? currentUser.profileImage 
+          : `http://localhost:5000${currentUser.profileImage}`;
+        setProfileImage(imageUrl);
+      } else {
+        setProfileImage(DEFAULT_PROFILE_IMAGE);
+      }
+      
+      setProfileImageFile(null);
     }
     setIsEditing(false);
   };
